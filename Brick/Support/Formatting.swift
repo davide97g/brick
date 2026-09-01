@@ -24,6 +24,17 @@ enum Format {
             : String(format: "%d:%02d", minutes, seconds)
     }
 
+    /// Spoken form for VoiceOver — "43 minutes", not "43:12".
+    static func spokenRemaining(_ interval: TimeInterval) -> String {
+        let minutes = Int((interval / 60).rounded(.up))
+        if minutes < 60 { return "\(minutes) minute\(minutes == 1 ? "" : "s")" }
+        let hours = minutes / 60
+        let rest = minutes % 60
+        return rest == 0
+            ? "\(hours) hour\(hours == 1 ? "" : "s")"
+            : "\(hours) hour\(hours == 1 ? "" : "s") \(rest) minutes"
+    }
+
     static func clockTime(_ date: Date) -> String {
         date.formatted(date: .omitted, time: .shortened)
     }

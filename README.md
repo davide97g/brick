@@ -65,6 +65,19 @@ A paid Apple Developer Program membership is required to run any of this on a de
 7. **Or you go back.** Tap the brick again — but only once the minimum duration has passed. Before that the app tells you the time remaining and nothing else.
 8. **Or you don't.** Three emergency unlocks per rolling seven days, behind a ten-second hold. The valve has to exist; it just shouldn't be something a thumb does by reflex.
 
+## The interface
+
+An instrument panel for a physical object, not a dashboard. Two zones on every screen: a
+near-black machined surface carrying the state, and a warm paper card carrying the controls.
+Monochrome throughout — `#0B0B0D` ink, `#EDE7DC` paper, chalk and ash and graphite between
+them — with exactly one chromatic value, an oxide red, reserved for the emergency unlock.
+Colour appears only where the commitment breaks.
+
+The signature is the bezel: 72 engraved tick marks, elapsed ones lit, the rest recessed. One
+tick is longer than the others — the **gate**, marking the point where the minimum duration is
+satisfied and the brick becomes able to end the session. The dial shows not just how much time
+is left but where the door opens, so you know before you walk back whether the walk is worth it.
+
 ## Architecture
 
 Everything that makes the brick a commitment rather than a switch lives in [`SessionEngine.swift`](BrickKit/Sources/BrickKit/Session/SessionEngine.swift) as pure functions over state and a timestamp — no Apple frameworks, no I/O, no clock of its own. That's why the rules can be tested exhaustively in milliseconds on a Mac.

@@ -9,7 +9,6 @@ struct BrickApp: App {
         WindowGroup {
             RootView()
                 .environment(model)
-                .tint(Theme.accent)
         }
     }
 }
@@ -22,6 +21,17 @@ final class AppModel {
 
     var isAuthorized: Bool
     var scanning = false
+
+    #if DEBUG
+    /// Screenshot hook: `-uiPreview start|settings|blocklist` opens that screen
+    /// at launch, so screens behind a tap can be captured from the CLI.
+    let uiPreview: String? = {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-uiPreview"),
+              arguments.indices.contains(index + 1) else { return nil }
+        return arguments[index + 1]
+    }()
+    #endif
     var alert: AlertContent?
     /// Set when a running session's shield could not be applied — the phone
     /// says it's blocked while nothing actually is.

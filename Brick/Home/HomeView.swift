@@ -3,6 +3,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var startSheetShown = false
     @State private var tick = Date()
 
@@ -12,36 +13,40 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if model.authorizationLost {
-                    warning(
-                        "Screen Time access is off",
-                        detail: "Nothing is being blocked. Turn it back on in Settings → Screen Time."
-                    )
-                } else if model.enforcementBroken {
-                    warning(
-                        "Not actually blocking",
-                        detail: "The blocked apps couldn't be applied. Re-pick them in Settings."
-                    )
-                }
+            ZStack {
+                Theme.ink.ignoresSafeArea()
 
-                if controller.activeSession != nil {
-                    activeSession
-                } else {
-                    idle
-                }
-            }
-            .animation(.snappy, value: controller.activeSession?.id)
-            .navigationTitle("Brick")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        SettingsView()
-                    } label: {
-                        Image(systemName: "gearshape")
+                VStack(spacing: 0) {
+                    header
+
+                    if let warning = warningText {
+                        notice(warning.0, detail: warning.1)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if controller.activeSession != nil {
+                        instrument
+                    } else {
+                        object
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if controller.activeSession != nil {
+                        runningControls
+                    } else {
+                        idleControls
                     }
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: settingsPreviewBinding) { SettingsView() }
+        }
+        .task {
+            #if DEBUG
+            if model.uiPreview == "start" { startSheetShown = true }
+            #endif
         }
         .sheet(isPresented: $startSheetShown) {
             StartSessionSheet(defaultDuration: controller.state.blocklist.defaultDuration)
@@ -55,138 +60,180 @@ struct HomeView: View {
         }
     }
 
-    private func warning(_ title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Label(title, systemImage: "exclamationmark.triangle.fill")
-                .font(.subheadline.weight(.semibold))
+    private var settingsPreviewBinding: Binding<Bool> {
+        #if DEBUG
+        Binding(get: { model.uiPreview == "settings" }, set: { _ in })
+        #else
+        .constant(false)
+        #endif
+    }
+
+    // MARK: Chrome
+
+    private var header: some View {
+        HStack {
+            Text(controller.activeSession != nil ? "Bricked" : "Brick")
+                .engraved(Theme.chalk)
+
+            Spacer()
+
+            NavigationLink {
+                SettingsView()
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 17, weight: .light))
+                    .foregroundStyle(Theme.ash)
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
+            }
+            .accessibilityLabel("Settings")
+        }
+        .padding(.leading, 26)
+        .padding(.trailing, 12)
+        .padding(.top, 8)
+    }
+
+    private var warningText: (String, String)? {
+        if model.authorizationLost {
+            return ("Screen Time is off", "Nothing is being blocked. Turn it back on in Settings.")
+        }
+        if model.enforcementBroken {
+            return ("Not actually blocking", "The apps couldn't be applied. Choose them again.")
+        }
+        return nil
+    }
+
+    private func notice(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title).engraved(Theme.oxide)
             Text(detail)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.ash)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color.yellow.opacity(0.18), in: .rect(cornerRadius: 14))
-        .padding(.horizontal, 20)
-        .padding(.bottom, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Theme.oxide.opacity(0.5), lineWidth: 1)
+        )
+        .padding(.horizontal, 22)
+        .padding(.top, 16)
     }
 
     // MARK: Running
 
     @ViewBuilder
-    private var activeSession: some View {
+    private var instrument: some View {
         if let session = controller.activeSession {
-            ScrollView {
-                VStack(spacing: 28) {
-                    SessionRing(
-                        progress: progress(of: session),
-                        remaining: session.remaining(at: controller.now),
-                        caption: "until \(Format.clockTime(session.plannedEnd))"
-                    )
-                    .padding(.top, 12)
+            SessionBezel(
+                progress: progress(of: session),
+                gate: gate(of: session),
+                remaining: session.remaining(at: controller.now),
+                caption: "until \(Format.clockTime(session.plannedEnd))",
+                isOpen: controller.canEndByTap
+            )
+            .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
+        }
+    }
 
-                    Text(controller.state.tag?.whereItIs ?? "")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+    private var runningControls: some View {
+        PaperCard {
+            Text(controller.state.tag?.whereItIs ?? "")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.ashOnPaper)
+                .multilineTextAlignment(.center)
 
-                    VStack(spacing: 12) {
-                        Button {
-                            Task { await model.scan { try await controller.endSessionByTap() } }
-                        } label: {
-                            Text(endButtonTitle)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .disabled(!controller.canEndByTap || model.scanning)
-
-                        if !controller.canEndByTap, let opensAt = controller.tapExitOpensAt {
-                            Text("The brick can end this at \(Format.clockTime(opensAt)).")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        EmergencyUnlockButton(remainingAllowance: controller.emergencyRemaining) {
-                            do {
-                                try controller.endSessionByEmergency()
-                            } catch {
-                                model.present(error)
-                            }
-                        }
-                        .padding(.top, 8)
-                    }
-                    .padding(.horizontal, 24)
+            VStack(spacing: 10) {
+                Button {
+                    Task { await model.scan { try await controller.endSessionByTap() } }
+                } label: {
+                    Text(endButtonTitle)
                 }
-                .padding(.bottom, 32)
+                .buttonStyle(SolidPill())
+                .disabled(!controller.canEndByTap || model.scanning)
+
+                if !controller.canEndByTap, let opensAt = controller.tapExitOpensAt {
+                    Text("The brick opens at \(Format.clockTime(opensAt))")
+                        .engraved(Theme.ashOnPaper)
+                }
+            }
+
+            EmergencyUnlockButton(remainingAllowance: controller.emergencyRemaining) {
+                do {
+                    try controller.endSessionByEmergency()
+                } catch {
+                    model.present(error)
+                }
             }
         }
     }
 
     private var endButtonTitle: String {
-        if model.scanning { return "Hold near your brick…" }
+        if model.scanning { return "Hold near your brick" }
         return controller.canEndByTap ? "Tap your brick to end" : "Locked"
     }
 
     private func progress(of session: Session) -> Double {
         guard session.plannedDuration > 0 else { return 1 }
-        return session.elapsed(at: controller.now) / session.plannedDuration
+        return min(1, session.elapsed(at: controller.now) / session.plannedDuration)
+    }
+
+    /// Where on the bezel the brick starts working.
+    private func gate(of session: Session) -> Double? {
+        let minimum = controller.state.blocklist.minimumDuration
+        guard minimum > 0, session.plannedDuration > 0 else { return nil }
+        let fraction = minimum / session.plannedDuration
+        return fraction < 1 ? fraction : nil
     }
 
     // MARK: Idle
 
-    private var idle: some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                BrickGlyph(size: 160)
-                    .padding(.top, 24)
+    private var object: some View {
+        VStack(spacing: 30) {
+            BrickBlock(width: 196)
 
-                VStack(spacing: 6) {
-                    Text("Ready")
-                        .font(.title2.bold())
-                    Text(controller.state.blocklist.summary)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-
-                Button {
-                    startSheetShown = true
-                } label: {
-                    Text("Start a session")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .padding(.horizontal, 24)
-
-                if let last = controller.state.history.last {
-                    lastSessionCard(last)
-                        .padding(.horizontal, 24)
-                }
+            VStack(spacing: 8) {
+                Text("Ready")
+                    .readout(size: 40)
+                    .foregroundStyle(Theme.chalk)
+                Text(controller.state.blocklist.summary)
+                    .engraved()
             }
-            .padding(.bottom, 32)
         }
     }
 
-    private func lastSessionCard(_ session: Session) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Last session")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
-                .font(.title3.weight(.medium))
-            Text(endedDescription(session))
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+    private var idleControls: some View {
+        PaperCard {
+            if let last = controller.state.history.last {
+                lastSession(last)
+            }
+
+            Button("Start a session") { startSheetShown = true }
+                .buttonStyle(SolidPill())
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+    }
+
+    private func lastSession(_ session: Session) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("Last")
+                .engraved(Theme.ashOnPaper)
+            Spacer()
+            Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(Theme.inkOnPaper)
+            Text("·")
+                .foregroundStyle(Theme.ashOnPaper)
+            Text(endedDescription(session))
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.ashOnPaper)
+        }
     }
 
     private func endedDescription(_ session: Session) -> String {
         switch session.endReason {
-        case .scheduled: return "Ran its full length"
-        case .tappedBrick: return "Ended at the brick"
-        case .emergency: return "Ended with an emergency unlock"
+        case .scheduled: return "ran out"
+        case .tappedBrick: return "ended at the brick"
+        case .emergency: return "emergency unlock"
         case .none: return ""
         }
     }

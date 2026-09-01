@@ -16,62 +16,75 @@ struct StartSessionSheet: View {
     private var controller: BrickController { model.controller }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 28) {
-                Spacer()
+        ZStack {
+            Theme.ink.ignoresSafeArea()
 
-                Text(Format.duration(.brickMinutes(minutes)))
-                    .font(.system(size: 64, weight: .light, design: .rounded))
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
+            VStack(spacing: 0) {
+                HStack {
+                    Button("Cancel") { dismiss() }
+                        .engraved()
+                        .frame(minWidth: 60, minHeight: 44, alignment: .leading)
+                    Spacer()
+                    Text("New session").engraved(Theme.chalk)
+                    Spacer()
+                    Color.clear.frame(width: 60, height: 44)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 18)
 
-                Text("Ends at \(Format.clockTime(controller.now.addingTimeInterval(.brickMinutes(minutes))))")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+
+                VStack(spacing: 10) {
+                    Text(Format.duration(.brickMinutes(minutes)))
+                        .readout(size: 66)
+                        .foregroundStyle(Theme.chalk)
+                        .contentTransition(.numericText())
+
+                    Text("ends at \(Format.clockTime(controller.now.addingTimeInterval(.brickMinutes(minutes))))")
+                        .engraved()
+                }
 
                 Picker("Length", selection: $minutes) {
                     ForEach(options, id: \.self) { option in
-                        Text(Format.duration(.brickMinutes(option))).tag(option)
+                        Text(Format.duration(.brickMinutes(option)))
+                            .foregroundStyle(Theme.chalk)
+                            .tag(option)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 140)
+                .frame(height: 150)
+                .padding(.top, 4)
 
-                if controller.state.blocklist.minimumDuration > 0 {
-                    Label(
-                        "The brick won't end this for the first \(Format.duration(min(controller.state.blocklist.minimumDuration, .brickMinutes(minutes)))).",
-                        systemImage: "lock"
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                }
+                Spacer(minLength: 0)
 
-                Spacer()
-
-                Button {
-                    Task {
-                        await model.scan {
-                            try await controller.startSessionByTap(duration: .brickMinutes(minutes))
-                        }
-                        if controller.activeSession != nil { dismiss() }
+                PaperCard {
+                    if controller.state.blocklist.minimumDuration > 0 {
+                        Text(lockNotice)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.ashOnPaper)
+                            .multilineTextAlignment(.center)
                     }
-                } label: {
-                    Text(model.scanning ? "Hold near your brick…" : "Tap your brick to start")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(model.scanning)
-            }
-            .padding(24)
-            .navigationTitle("Start a session")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+
+                    Button {
+                        Task {
+                            await model.scan {
+                                try await controller.startSessionByTap(duration: .brickMinutes(minutes))
+                            }
+                            if controller.activeSession != nil { dismiss() }
+                        }
+                    } label: {
+                        Text(model.scanning ? "Hold near your brick" : "Tap your brick to start")
+                    }
+                    .buttonStyle(SolidPill())
+                    .disabled(model.scanning)
                 }
             }
         }
+        .presentationDragIndicator(.visible)
+    }
+
+    private var lockNotice: String {
+        let locked = min(controller.state.blocklist.minimumDuration, .brickMinutes(minutes))
+        return "The brick won't end this for the first \(Format.duration(locked))."
     }
 }

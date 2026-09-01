@@ -21,20 +21,22 @@ struct BlocklistView: View {
                 } label: {
                     HStack {
                         Text("Apps, categories and sites")
+                            .foregroundStyle(Theme.chalk)
                         Spacer()
                         Text(blocklist.summary)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.ash)
                         Image(systemName: "chevron.right")
-                            .font(.footnote.bold())
-                            .foregroundStyle(.tertiary)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.graphite)
                     }
                 }
                 .disabled(controller.activeSession != nil)
             } footer: {
                 Text("Changes apply to your next session, not the one running.")
+                    .foregroundStyle(Theme.ash)
             }
 
-            Section("Session length") {
+            Section {
                 durationPicker(
                     title: "Default",
                     value: blocklist.defaultDuration,
@@ -43,6 +45,7 @@ struct BlocklistView: View {
                     controller.updateDurations(default: newValue, minimum: blocklist.minimumDuration)
                 }
 
+
                 durationPicker(
                     title: "Locked for at least",
                     value: blocklist.minimumDuration,
@@ -50,16 +53,18 @@ struct BlocklistView: View {
                 ) { newValue in
                     controller.updateDurations(default: blocklist.defaultDuration, minimum: newValue)
                 }
+            } header: {
+                InkSectionHeader(text: "Session length")
             }
 
             Section {
                 EmptyView()
             } footer: {
                 Text("Until the minimum has passed, tapping the brick won't end the session — that's what makes it a commitment rather than a switch. Emergency unlocks still work.")
+                    .foregroundStyle(Theme.ash)
             }
         }
-        .navigationTitle("What it blocks")
-        .navigationBarTitleDisplayMode(.inline)
+        .inkList("What it blocks")
         .familyActivityPicker(isPresented: $pickerShown, selection: $selection)
         .onChange(of: selection) { _, newValue in
             guard loaded else { return }
@@ -79,11 +84,13 @@ struct BlocklistView: View {
         options: [Double],
         onChange: @escaping (TimeInterval) -> Void
     ) -> some View {
-        Picker(title, selection: Binding(get: { value }, set: onChange)) {
+        Picker(selection: Binding(get: { value }, set: onChange)) {
             ForEach(options, id: \.self) { minutes in
                 Text(minutes == 0 ? "No minimum" : Format.duration(.brickMinutes(minutes)))
                     .tag(TimeInterval.brickMinutes(minutes))
             }
+        } label: {
+            Text(title).foregroundStyle(Theme.chalk)
         }
     }
 

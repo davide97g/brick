@@ -27,6 +27,7 @@
 		A90FF1160C4B1231F1F6F36D /* CoreNFCTagWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */; };
 		AB79BB1AF60BD992E133F9A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85AD41481B81CFEAF0DB6C6D /* Assets.xcassets */; };
 		BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81391C961605212FB6128E92 /* BrickKit */; };
+		BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEAE041CD91BE708D875220 /* ListStyling.swift */; };
 		C0122450B1120A5A2DBF5DB9 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68240CED27BF312A3C469E50 /* AppEnvironment.swift */; };
 		CAD390D4B79FE498D0C8B661 /* UserNotificationsNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */; };
 		E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16FCF6027E4C442FD9F543B /* OnboardingView.swift */; };
@@ -72,6 +73,7 @@
 		00A86E285DED1B45A6A74368 /* BrickKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BrickKit; path = BrickKit; sourceTree = SOURCE_ROOT; };
 		02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickApp.swift; sourceTree = "<group>"; };
 		04B84B8A36E64FD078050A54 /* BrickShield.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BrickShield.entitlements; sourceTree = "<group>"; };
+		1DEAE041CD91BE708D875220 /* ListStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListStyling.swift; sourceTree = "<group>"; };
 		1DF3AEFF186BF79EB81D38FC /* BrickMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BrickMonitor.entitlements; sourceTree = "<group>"; };
 		26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartSessionSheet.swift; sourceTree = "<group>"; };
 		314D801CEB699B3A5390680C /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
@@ -215,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				314D801CEB699B3A5390680C /* Formatting.swift */,
+				1DEAE041CD91BE708D875220 /* ListStyling.swift */,
 				BDF7454390531E65A0034E9C /* Theme.swift */,
 			);
 			path = Support;
@@ -416,6 +419,7 @@
 				220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */,
 				493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */,
 				42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */,
+				BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */,
 				32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */,
 				E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */,
 				EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */,

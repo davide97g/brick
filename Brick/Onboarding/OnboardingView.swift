@@ -10,167 +10,198 @@ struct OnboardingView: View {
     private var controller: BrickController { model.controller }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            Theme.ink.ignoresSafeArea()
+
             TabView(selection: $page) {
                 explainer(
-                    glyph: true,
-                    title: "One brick. One decision.",
+                    block: true,
+                    eyebrow: "The idea",
+                    title: "One object.\nOne decision.",
                     body: "Leave the brick where you work. Tap it to start, then walk away. Getting your apps back means going back to it."
                 )
                 .tag(0)
 
                 explainer(
-                    symbol: "lock.shield",
-                    title: "Nothing leaves your phone",
-                    body: "Apple hands this app opaque tokens, not app names — it can't see what you blocked. There are no accounts, no analytics, and no networking code at all."
+                    eyebrow: "Privacy",
+                    title: "Nothing leaves\nyour phone.",
+                    body: "Apple hands this app opaque tokens, not app names — it can't see what you blocked. No account, no analytics, no networking code at all."
                 )
                 .tag(1)
 
                 explainer(
-                    symbol: "exclamationmark.triangle",
-                    title: "Deleting the app unblocks everything",
-                    body: "That's how iOS works, and no app can change it. If you want that door shut, turn on Screen Time → Content & Privacy → App Deletion → Don't Allow."
+                    eyebrow: "The catch",
+                    title: "Deleting the app\nunblocks everything.",
+                    body: "That's how iOS works, and no app can change it. To shut that door: Settings → Screen Time → Content & Privacy → App Deletion → Don't Allow."
                 )
                 .tag(2)
 
-                setupPage
-                    .tag(3)
+                setup.tag(3)
             }
-            .tabViewStyle(.page)
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
-        .background(Color(.systemGroupedBackground))
+    }
+
+    private var pageDots: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<4, id: \.self) { index in
+                Capsule()
+                    .fill(index == page ? Theme.chalk : Theme.graphite)
+                    .frame(width: index == page ? 18 : 6, height: 6)
+                    .animation(.snappy, value: page)
+            }
+        }
+        .accessibilityHidden(true)
     }
 
     // MARK: Pages
 
     private func explainer(
-        glyph: Bool = false,
-        symbol: String? = nil,
+        block: Bool = false,
+        eyebrow: String,
         title: String,
         body: String
     ) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
             Spacer()
-            if glyph {
-                BrickGlyph(size: 140)
-            } else if let symbol {
-                Image(systemName: symbol)
-                    .font(.system(size: 56, weight: .light))
-                    .foregroundStyle(Theme.accent)
+
+            if block {
+                BrickBlock(width: 200)
+                    .padding(.bottom, 46)
             }
-            VStack(spacing: 12) {
+
+            VStack(alignment: .leading, spacing: 16) {
+                Text(eyebrow).engraved()
                 Text(title)
-                    .font(.title.bold())
-                    .multilineTextAlignment(.center)
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundStyle(Theme.chalk)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(body)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .font(.system(size: 16))
+                    .foregroundStyle(Theme.ash)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 30)
+
             Spacer()
-            Button("Continue") { withAnimation { page += 1 } }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-            Spacer().frame(height: 48)
+
+            pageDots.padding(.bottom, 22)
+
+            PaperCard {
+                Button("Continue") { withAnimation { page += 1 } }
+                    .buttonStyle(SolidPill())
+            }
         }
-        .padding(28)
     }
 
-    private var setupPage: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            Text("Set up")
-                .font(.title.bold())
+    private var setup: some View {
+        NavigationStack {
+            ZStack {
+                Theme.ink.ignoresSafeArea()
 
-            VStack(spacing: 12) {
-                setupRow(
-                    number: 1,
-                    title: "Allow Screen Time access",
-                    detail: "Required to block anything.",
-                    done: model.isAuthorized
-                ) {
-                    Button("Allow") { Task { await model.requestAuthorization() } }
-                        .buttonStyle(.borderedProminent)
-                }
+                VStack(spacing: 0) {
+                    Spacer()
 
-                setupRow(
-                    number: 2,
-                    title: "Pair your brick",
-                    detail: controller.state.tag.map { "Paired \(Format.day($0.pairedAt))" } ?? "Hold your iPhone near it.",
-                    done: controller.state.isPaired,
-                    enabled: model.isAuthorized
-                ) {
-                    Button(model.scanning ? "Scanning…" : "Scan") {
-                        Task { await model.scan { try await controller.pairBrick() } }
+                    VStack(alignment: .leading, spacing: 26) {
+                        Text("Set up").engraved()
+
+                        step(
+                            index: 1,
+                            title: "Allow Screen Time access",
+                            detail: "Required to block anything.",
+                            done: model.isAuthorized,
+                            enabled: true
+                        ) {
+                            Button("Allow") { Task { await model.requestAuthorization() } }
+                        }
+
+                        step(
+                            index: 2,
+                            title: "Pair your brick",
+                            detail: controller.state.tag.map { "Paired \(Format.day($0.pairedAt))" }
+                                ?? "Hold your iPhone near it.",
+                            done: controller.state.isPaired,
+                            enabled: model.isAuthorized
+                        ) {
+                            Button(model.scanning ? "Scanning" : "Scan") {
+                                Task { await model.scan { try await controller.pairBrick() } }
+                            }
+                            .disabled(model.scanning)
+                        }
+
+                        step(
+                            index: 3,
+                            title: "Choose what it blocks",
+                            detail: controller.state.blocklist.summary,
+                            done: !controller.state.blocklist.isEmpty,
+                            enabled: controller.state.isPaired
+                        ) {
+                            NavigationLink("Choose") { BlocklistView() }
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(model.scanning)
-                }
+                    .padding(.horizontal, 30)
 
-                setupRow(
-                    number: 3,
-                    title: "Choose what it blocks",
-                    detail: controller.state.blocklist.summary,
-                    done: !controller.state.blocklist.isEmpty,
-                    enabled: controller.state.isPaired
-                ) {
-                    NavigationLink {
-                        BlocklistView()
-                    } label: {
-                        Text("Choose")
-                    }
-                    .buttonStyle(.borderedProminent)
+                    Spacer()
+
+                    pageDots.padding(.bottom, 30)
                 }
             }
-            Spacer()
+            .toolbar(.hidden, for: .navigationBar)
         }
-        .padding(28)
-        .frame(maxWidth: .infinity)
-        // The picker is presented from a NavigationLink, so this page needs a stack.
-        .modifier(WrapInNavigationStack())
     }
 
-    private func setupRow(
-        number: Int,
+    private func step(
+        index: Int,
         title: String,
         detail: String,
         done: Bool,
-        enabled: Bool = true,
+        enabled: Bool,
         @ViewBuilder action: () -> some View
     ) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(done ? Theme.accent : Color.primary.opacity(0.08))
-                    .frame(width: 30, height: 30)
+        HStack(spacing: 16) {
+            Group {
                 if done {
                     Image(systemName: "checkmark")
-                        .font(.footnote.bold())
-                        .foregroundStyle(.white)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.ink)
+                        .frame(width: 26, height: 26)
+                        .background(Circle().fill(Theme.chalk))
                 } else {
-                    Text("\(number)").font(.footnote.bold())
+                    Text("\(index)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.ash)
+                        .frame(width: 26, height: 26)
+                        .background(Circle().strokeBorder(Theme.graphite, lineWidth: 1))
                 }
             }
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.headline)
-                Text(detail).font(.footnote).foregroundStyle(.secondary)
+                Text(title)
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(Theme.chalk)
+                Text(detail)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.ash)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            if !done { action() }
+            if !done {
+                action()
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 18)
+                    .frame(height: 38)
+                    .background(Capsule().fill(Theme.chalk))
+            }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
-        .opacity(enabled || done ? 1 : 0.4)
+        .opacity(enabled || done ? 1 : 0.35)
         .disabled(!enabled && !done)
-    }
-}
-
-private struct WrapInNavigationStack: ViewModifier {
-    func body(content: Content) -> some View {
-        NavigationStack { content }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Step \(index). \(title). \(done ? "Done" : detail)")
     }
 }

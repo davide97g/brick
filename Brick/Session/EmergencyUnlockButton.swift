@@ -1,7 +1,10 @@
 import SwiftUI
 
-/// A ten-second hold. The valve has to exist — the brick is deliberately out of
-/// reach — but it should never be something a thumb does by reflex.
+/// A ten-second hold, and the only place colour appears in the app.
+///
+/// The valve has to exist — the brick is deliberately out of reach — but it
+/// should never be something a thumb does by reflex. The oxide fill creeping
+/// across the pill is the interface admitting something is being spent.
 struct EmergencyUnlockButton: View {
     var remainingAllowance: Int
     var action: () -> Void
@@ -10,42 +13,61 @@ struct EmergencyUnlockButton: View {
     @State private var holdTask: Task<Void, Never>?
 
     private let holdDuration: TimeInterval = 10
+    private var isSpent: Bool { remainingAllowance == 0 }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             ZStack {
-                Capsule().fill(Color.primary.opacity(0.06))
+                Capsule().strokeBorder(Theme.inkOnPaper.opacity(0.18), lineWidth: 1)
+
                 GeometryReader { proxy in
                     Capsule()
-                        .fill(Color.red.opacity(0.18))
+                        .fill(Theme.oxide.opacity(0.9))
                         .frame(width: proxy.size.width * progress)
                 }
-                Text(progress > 0 ? "Keep holding…" : "Hold to unlock in an emergency")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(remainingAllowance > 0 ? Color.red : Color.secondary)
+                .clipShape(Capsule())
+
+                Text(progress > 0 ? "Keep holding" : "Hold to unlock")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(fillHasReachedLabel ? Theme.paper : labelColor)
             }
-            .frame(height: 52)
-            .clipShape(Capsule())
+            .frame(height: 54)
             .contentShape(Capsule())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in beginHold() }
                     .onEnded { _ in cancelHold() }
             )
-            .disabled(remainingAllowance == 0)
-            .opacity(remainingAllowance == 0 ? 0.5 : 1)
+            .disabled(isSpent)
 
-            Text(remainingAllowance == 0
-                 ? "No emergency unlocks left this week"
-                 : "\(remainingAllowance) left this week")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(allowanceText)
+                .engraved(Theme.ashOnPaper)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Emergency unlock")
+        .accessibilityHint(
+            isSpent
+                ? "None left this week"
+                : "Hold for ten seconds. \(remainingAllowance) left this week."
+        )
+        .accessibilityAddTraits(isSpent ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { action() }
         .onDisappear { cancelHold() }
     }
 
+    private var labelColor: Color {
+        isSpent ? Theme.ashOnPaper : Theme.oxide
+    }
+
+    /// Once the fill passes the centre the label sits on oxide, not paper.
+    private var fillHasReachedLabel: Bool { progress > 0.42 }
+
+    private var allowanceText: String {
+        isSpent ? "None left this week" : "\(remainingAllowance) left this week"
+    }
+
     private func beginHold() {
-        guard holdTask == nil, remainingAllowance > 0 else { return }
+        guard holdTask == nil, !isSpent else { return }
         holdTask = Task { @MainActor in
             let steps = 60
             for step in 1...steps {

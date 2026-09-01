@@ -16,6 +16,8 @@ struct RootView: View {
             }
         }
         .animation(.snappy, value: model.needsSetup)
+        .preferredColorScheme(.dark)
+        .tint(Theme.chalk)
         .alert(item: $model.alert) { alert in
             Alert(title: Text(alert.title), message: alert.message.isEmpty ? nil : Text(alert.message))
         }

@@ -9,45 +9,69 @@ struct SettingsView: View {
 
     var body: some View {
         List {
-            Section("Your brick") {
-                NavigationLink("What it blocks") { BlocklistView() }
+            Section {
+                NavigationLink {
+                    BlocklistView()
+                } label: {
+                    Text("What it blocks").foregroundStyle(Theme.chalk)
+                }
 
                 if let tag = controller.state.tag {
-                    LabeledContent("Tag", value: String(tag.uid.suffix(6)))
-                        .monospaced()
-                    LabeledContent("Paired", value: Format.day(tag.pairedAt))
+                    LabeledContent {
+                        Text(String(tag.uid.suffix(6)))
+                            .monospaced()
+                            .foregroundStyle(Theme.ash)
+                    } label: {
+                        Text("Tag").foregroundStyle(Theme.chalk)
+                    }
+
+                    LabeledContent {
+                        Text(Format.day(tag.pairedAt)).foregroundStyle(Theme.ash)
+                    } label: {
+                        Text("Paired").foregroundStyle(Theme.chalk)
+                    }
                 }
 
                 TextField("Where you keep it", text: $placeNote, prompt: Text("on your desk"))
+                    .foregroundStyle(Theme.chalk)
                     .onSubmit { controller.updatePlaceNote(placeNote) }
+            } header: {
+                InkSectionHeader(text: "Your brick")
             }
 
             Section {
-                Button("Unpair brick", role: .destructive) {
+                Button("Unpair brick") {
                     do {
                         try controller.unpairBrick()
                     } catch {
                         model.present(error)
                     }
                 }
+                .foregroundStyle(controller.activeSession != nil ? Theme.graphite : Theme.oxide)
                 .disabled(controller.activeSession != nil)
             } footer: {
                 Text(controller.activeSession != nil
                      ? "You can't unpair while a session is running."
                      : "Pairing a different brick starts from scratch.")
+                    .foregroundStyle(Theme.ash)
             }
 
             if !controller.state.history.isEmpty {
-                Section("History") {
+                Section {
                     ForEach(controller.state.history.reversed()) { session in
-                        VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .firstTextBaseline) {
                             Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
-                                .font(.body.weight(.medium))
+                                .font(.system(size: 16, weight: .regular))
+                                .monospacedDigit()
+                                .foregroundStyle(Theme.chalk)
+                            Spacer()
                             Text(Format.day(session.startedAt))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.ash)
                         }
                     }
+                } header: {
+                    InkSectionHeader(text: "History")
                 }
             }
 
@@ -55,10 +79,10 @@ struct SettingsView: View {
                 EmptyView()
             } footer: {
                 Text("Brick keeps everything on this iPhone. No account, no sync, no analytics, no network requests.")
+                    .foregroundStyle(Theme.ash)
             }
         }
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
+        .inkList("Settings")
         .task { placeNote = controller.state.tag?.placeNote ?? "" }
         .onChange(of: placeNote) { _, newValue in controller.updatePlaceNote(newValue) }
     }
