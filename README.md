@@ -150,5 +150,6 @@ Deliberately not planned: streaks, points, scores, or anything that makes the ph
 ---
 
 <div align="center">
-<sub>A personal project. No license yet — all rights reserved by default until one is chosen.</sub>
+<sub><b><a href="LICENSE">The Unlicense</a></b> — public domain. Software and hardware designs alike.<br>
+Copy it, sell it, print it, build a business on it. No attribution required.</sub>
 </div>
