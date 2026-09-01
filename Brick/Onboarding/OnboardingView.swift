@@ -3,9 +3,17 @@ import SwiftUI
 
 /// Three honest screens, then the two things that actually gate use:
 /// authorization and a paired brick. Nothing is asked for before it's needed.
+///
+/// The paper card and the dots are static chrome outside the `TabView`: only
+/// the dark content swipes. Keeping the card in the page would slide a second
+/// copy of itself into view on every drag, and its bottom safe-area inset
+/// doesn't resolve correctly inside a paged container.
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var page = 0
+
+    private static let pageCount = 4
+    private var isSetupPage: Bool { page == Self.pageCount - 1 }
 
     private var controller: BrickController { model.controller }
 
@@ -13,45 +21,76 @@ struct OnboardingView: View {
         ZStack {
             Theme.ink.ignoresSafeArea()
 
-            TabView(selection: $page) {
-                explainer(
-                    block: true,
-                    eyebrow: "The idea",
-                    title: "One object.\nOne decision.",
-                    body: "Leave the brick where you work. Tap it to start, then walk away. Getting your apps back means going back to it."
-                )
-                .tag(0)
+            VStack(spacing: 0) {
+                TabView(selection: $page) {
+                    explainer(
+                        block: true,
+                        eyebrow: "The idea",
+                        title: "One object.\nOne decision.",
+                        body: "Leave the brick where you work. Tap it to start, then walk away. Getting your apps back means going back to it."
+                    )
+                    .tag(0)
 
-                explainer(
-                    eyebrow: "Privacy",
-                    title: "Nothing leaves\nyour phone.",
-                    body: "Apple hands this app opaque tokens, not app names — it can't see what you blocked. No account, no analytics, no networking code at all."
-                )
-                .tag(1)
+                    explainer(
+                        eyebrow: "Privacy",
+                        title: "Nothing leaves\nyour phone.",
+                        body: "Apple hands this app opaque tokens, not app names — it can't see what you blocked. No account, no analytics, no networking code at all."
+                    )
+                    .tag(1)
 
-                explainer(
-                    eyebrow: "The catch",
-                    title: "Deleting the app\nunblocks everything.",
-                    body: "That's how iOS works, and no app can change it. To shut that door: Settings → Screen Time → Content & Privacy → App Deletion → Don't Allow."
-                )
-                .tag(2)
+                    explainer(
+                        eyebrow: "The catch",
+                        title: "Deleting the app\nunblocks everything.",
+                        body: "That's how iOS works, and no app can change it. To shut that door: Settings → Screen Time → Content & Privacy → App Deletion → Don't Allow."
+                    )
+                    .tag(2)
 
-                setup.tag(3)
+                    setup.tag(3)
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+
+                pageDots
+                    .padding(.top, 4)
+                    .padding(.bottom, isSetupPage ? 28 : 22)
+
+                if !isSetupPage {
+                    PaperCard {
+                        Button("Continue") { advance() }
+                            .buttonStyle(SolidPill())
+                    }
+                    .transition(.move(edge: .bottom))
+                }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+        }
+        .animation(.smooth(duration: 0.35), value: isSetupPage)
+        .task {
+            #if DEBUG
+            // Screenshot hook: -uiPreview onboard2 opens that page directly.
+            if let preview = model.uiPreview, preview.hasPrefix("onboard"),
+               let index = Int(preview.dropFirst("onboard".count)) {
+                page = min(max(0, index), Self.pageCount - 1)
+            }
+            #endif
+        }
+    }
+
+    private func advance() {
+        withAnimation(.smooth(duration: 0.45)) {
+            page = min(page + 1, Self.pageCount - 1)
         }
     }
 
     private var pageDots: some View {
         HStack(spacing: 7) {
-            ForEach(0..<4, id: \.self) { index in
+            ForEach(0..<Self.pageCount, id: \.self) { index in
                 Capsule()
                     .fill(index == page ? Theme.chalk : Theme.graphite)
                     .frame(width: index == page ? 18 : 6, height: 6)
-                    .animation(.snappy, value: page)
             }
         }
-        .accessibilityHidden(true)
+        .animation(.smooth(duration: 0.3), value: page)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Page \(page + 1) of \(Self.pageCount)")
     }
 
     // MARK: Pages
@@ -63,7 +102,7 @@ struct OnboardingView: View {
         body: String
     ) -> some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer(minLength: 0)
 
             if block {
                 BrickBlock(width: 200)
@@ -86,14 +125,7 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 30)
 
-            Spacer()
-
-            pageDots.padding(.bottom, 22)
-
-            PaperCard {
-                Button("Continue") { withAnimation { page += 1 } }
-                    .buttonStyle(SolidPill())
-            }
+            Spacer(minLength: 0)
         }
     }
 
@@ -103,7 +135,7 @@ struct OnboardingView: View {
                 Theme.ink.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    Spacer()
+                    Spacer(minLength: 0)
 
                     VStack(alignment: .leading, spacing: 26) {
                         Text("Set up").engraved()
@@ -144,9 +176,7 @@ struct OnboardingView: View {
                     }
                     .padding(.horizontal, 30)
 
-                    Spacer()
-
-                    pageDots.padding(.bottom, 30)
+                    Spacer(minLength: 0)
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -183,10 +213,13 @@ struct OnboardingView: View {
                 Text(title)
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Theme.chalk)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(detail)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.ash)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .layoutPriority(1)
 
             Spacer(minLength: 8)
 
@@ -194,9 +227,10 @@ struct OnboardingView: View {
                 action()
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, 18)
+                    .padding(.horizontal, 16)
                     .frame(height: 38)
                     .background(Capsule().fill(Theme.chalk))
+                    .fixedSize()
             }
         }
         .opacity(enabled || done ? 1 : 0.35)

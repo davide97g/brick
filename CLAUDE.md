@@ -54,6 +54,8 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 - **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (app target) is the only encoder/decoder. `BlocklistConfig` caches the counts so the UI can describe a selection without decoding it.
 - **Screen Time access can be revoked from Settings mid-session**, silently invalidating tokens. `reapplyShieldIfNeeded()` repairs it on foreground and reports failure; the UI shows a banner rather than letting the countdown lie.
 - **Extension code runs out of process under tight time and memory limits.** Keep `BrickMonitor` trivial.
+- **Don't put persistent chrome inside a paged `TabView`.** A `PaperCard` placed in each page slides a second copy of itself into view on every swipe, and its bottom safe-area inset doesn't resolve, so it renders cropped. Keep the card and the dots outside the `TabView`; only content pages swipe.
+- **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview onboard<N>` exists so all four can be.
 
 ## Tests
 
