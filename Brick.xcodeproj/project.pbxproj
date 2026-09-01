@@ -1,0 +1,455 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		050570B8B871D2A123E2B46E /* StartSessionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */; };
+		191A0100B7D7FAC4D6A37DE9 /* Authorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317A6A505487B087A65990B0 /* Authorization.swift */; };
+		1EA01D0EBDCC8D40A7B92390 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */; };
+		220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */; };
+		2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */; };
+		32A0E0CDAF6BAC38C953A388 /* CoreNFCTagReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */; };
+		32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */; };
+		4072159F7D84467B2EFAB7C2 /* BlocklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46B837C294C909AE11C56F9 /* BlocklistView.swift */; };
+		42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6BE8D2070A8B46D72CC95A /* HomeView.swift */; };
+		493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314D801CEB699B3A5390680C /* Formatting.swift */; };
+		4A1CEB4F016CDABD1012F418 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF7454390531E65A0034E9C /* Theme.swift */; };
+		BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81391C961605212FB6128E92 /* BrickKit */; };
+		C0122450B1120A5A2DBF5DB9 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68240CED27BF312A3C469E50 /* AppEnvironment.swift */; };
+		E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16FCF6027E4C442FD9F543B /* OnboardingView.swift */; };
+		E2CDC3E831ABE799FC11A8C5 /* SimulatorAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */; };
+		EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC32462D272224C9B1450DD /* RootView.swift */; };
+		F2B172C8B78388EAE2E408E9 /* SessionRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C56EFDBCDF7146197422B0D /* SessionRing.swift */; };
+		F4DEFA130B77A6A10E13FAB1 /* BrickApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		00A86E285DED1B45A6A74368 /* BrickKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BrickKit; path = BrickKit; sourceTree = SOURCE_ROOT; };
+		02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickApp.swift; sourceTree = "<group>"; };
+		26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartSessionSheet.swift; sourceTree = "<group>"; };
+		314D801CEB699B3A5390680C /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
+		317A6A505487B087A65990B0 /* Authorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization.swift; sourceTree = "<group>"; };
+		37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreNFCTagReader.swift; sourceTree = "<group>"; };
+		4C56EFDBCDF7146197422B0D /* SessionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRing.swift; sourceTree = "<group>"; };
+		68240CED27BF312A3C469E50 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		6FC32462D272224C9B1450DD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyUnlockButton.swift; sourceTree = "<group>"; };
+		AEE5301B45DD451CB4E17ECC /* Brick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Brick.entitlements; sourceTree = "<group>"; };
+		B16FCF6027E4C442FD9F543B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		B41B092FA54E265C0FCC0BF1 /* Brick.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Brick.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BDF7454390531E65A0034E9C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		BE6BE8D2070A8B46D72CC95A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorAdapters.swift; sourceTree = "<group>"; };
+		C46B837C294C909AE11C56F9 /* BlocklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlocklistView.swift; sourceTree = "<group>"; };
+		E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityScheduler.swift; sourceTree = "<group>"; };
+		E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedSettingsShielding.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		01621D4076E43AB3CB614E12 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2324578DF2E090B8BE18DA40 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B41B092FA54E265C0FCC0BF1 /* Brick.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		34D30A95CE6C3171C013472B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				00A86E285DED1B45A6A74368 /* BrickKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		3559CD13159D5A85B5F7AFCF = {
+			isa = PBXGroup;
+			children = (
+				96243320245C2ACB581A18C0 /* Brick */,
+				34D30A95CE6C3171C013472B /* Packages */,
+				2324578DF2E090B8BE18DA40 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4F46F5E02526EEFA40277A8B /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				BE6BE8D2070A8B46D72CC95A /* HomeView.swift */,
+				4C56EFDBCDF7146197422B0D /* SessionRing.swift */,
+				6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		558F5C8AF7D74B9EDD102255 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				B16FCF6027E4C442FD9F543B /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		5DCEB86D1339563DA90EF23D /* Adapters */ = {
+			isa = PBXGroup;
+			children = (
+				68240CED27BF312A3C469E50 /* AppEnvironment.swift */,
+				317A6A505487B087A65990B0 /* Authorization.swift */,
+				37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */,
+				E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */,
+				E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */,
+				C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */,
+			);
+			path = Adapters;
+			sourceTree = "<group>";
+		};
+		672E838DB2C830113157D0E4 /* Session */ = {
+			isa = PBXGroup;
+			children = (
+				A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */,
+				26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */,
+			);
+			path = Session;
+			sourceTree = "<group>";
+		};
+		7A641ACAB51EC1C0205506EF /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				314D801CEB699B3A5390680C /* Formatting.swift */,
+				BDF7454390531E65A0034E9C /* Theme.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		96243320245C2ACB581A18C0 /* Brick */ = {
+			isa = PBXGroup;
+			children = (
+				AEE5301B45DD451CB4E17ECC /* Brick.entitlements */,
+				02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */,
+				6FC32462D272224C9B1450DD /* RootView.swift */,
+				5DCEB86D1339563DA90EF23D /* Adapters */,
+				A7945604153A01FCBD8759DD /* Blocklist */,
+				4F46F5E02526EEFA40277A8B /* Home */,
+				558F5C8AF7D74B9EDD102255 /* Onboarding */,
+				672E838DB2C830113157D0E4 /* Session */,
+				7A641ACAB51EC1C0205506EF /* Support */,
+			);
+			path = Brick;
+			sourceTree = "<group>";
+		};
+		A7945604153A01FCBD8759DD /* Blocklist */ = {
+			isa = PBXGroup;
+			children = (
+				C46B837C294C909AE11C56F9 /* BlocklistView.swift */,
+			);
+			path = Blocklist;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3C7F23EB15690F148AD66920 /* Brick */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 85A2B6AC7FC6BEC78FBF60DC /* Build configuration list for PBXNativeTarget "Brick" */;
+			buildPhases = (
+				F3970206CBE964FC86DDDAC6 /* Sources */,
+				01621D4076E43AB3CB614E12 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Brick;
+			packageProductDependencies = (
+				81391C961605212FB6128E92 /* BrickKit */,
+			);
+			productName = Brick;
+			productReference = B41B092FA54E265C0FCC0BF1 /* Brick.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8541A11882C2C52C4BBF99CC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					3C7F23EB15690F148AD66920 = {
+						DevelopmentTeam = DA596D32QB;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 7DADC8C148AC0847C8086068 /* Build configuration list for PBXProject "Brick" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3559CD13159D5A85B5F7AFCF;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F3FA30D12E76CF4681396C44 /* XCLocalSwiftPackageReference "BrickKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2324578DF2E090B8BE18DA40 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3C7F23EB15690F148AD66920 /* Brick */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F3970206CBE964FC86DDDAC6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0122450B1120A5A2DBF5DB9 /* AppEnvironment.swift in Sources */,
+				191A0100B7D7FAC4D6A37DE9 /* Authorization.swift in Sources */,
+				4072159F7D84467B2EFAB7C2 /* BlocklistView.swift in Sources */,
+				F4DEFA130B77A6A10E13FAB1 /* BrickApp.swift in Sources */,
+				32A0E0CDAF6BAC38C953A388 /* CoreNFCTagReader.swift in Sources */,
+				2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */,
+				220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */,
+				493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */,
+				42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */,
+				32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */,
+				E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */,
+				EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */,
+				F2B172C8B78388EAE2E408E9 /* SessionRing.swift in Sources */,
+				1EA01D0EBDCC8D40A7B92390 /* SettingsView.swift in Sources */,
+				E2CDC3E831ABE799FC11A8C5 /* SimulatorAdapters.swift in Sources */,
+				050570B8B871D2A123E2B46E /* StartSessionSheet.swift in Sources */,
+				4A1CEB4F016CDABD1012F418 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		47A3A323D20D34DB6D372DB5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = DA596D32QB;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		58CFEB3D7A986D93EA314D76 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Brick/Brick.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick;
+				PRODUCT_NAME = Brick;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7BC05321DBEF58A0358E4B4F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = DA596D32QB;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		83C0B094866A6A556BC73A43 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Brick/Brick.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick;
+				PRODUCT_NAME = Brick;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7DADC8C148AC0847C8086068 /* Build configuration list for PBXProject "Brick" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47A3A323D20D34DB6D372DB5 /* Debug */,
+				7BC05321DBEF58A0358E4B4F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		85A2B6AC7FC6BEC78FBF60DC /* Build configuration list for PBXNativeTarget "Brick" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				58CFEB3D7A986D93EA314D76 /* Debug */,
+				83C0B094866A6A556BC73A43 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F3FA30D12E76CF4681396C44 /* XCLocalSwiftPackageReference "BrickKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = BrickKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		81391C961605212FB6128E92 /* BrickKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BrickKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8541A11882C2C52C4BBF99CC /* Project object */;
+}

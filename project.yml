@@ -1,0 +1,32 @@
+name: Brick
+options:
+  bundleIdPrefix: com.davideghiotto
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: DA596D32QB
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+packages:
+  BrickKit:
+    path: BrickKit
+targets:
+  Brick:
+    type: application
+    platform: iOS
+    sources:
+      - Brick
+    dependencies:
+      - package: BrickKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.davideghiotto.brick
+        PRODUCT_NAME: Brick
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_NFCReaderUsageDescription: "Brick reads your brick's NFC tag to start and end a session."
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        CODE_SIGN_ENTITLEMENTS: Brick/Brick.entitlements

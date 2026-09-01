@@ -1,0 +1,99 @@
+import BrickKit
+import FamilyControls
+import SwiftUI
+
+/// The one place the app touches `FamilyActivitySelection`. It is encoded to
+/// bytes immediately and handed to BrickKit, which never decodes it.
+struct BlocklistView: View {
+    @Environment(AppModel.self) private var model
+    @State private var selection = FamilyActivitySelection()
+    @State private var pickerShown = false
+    @State private var loaded = false
+
+    private var controller: BrickController { model.controller }
+    private var blocklist: BlocklistConfig { controller.state.blocklist }
+
+    var body: some View {
+        List {
+            Section {
+                Button {
+                    pickerShown = true
+                } label: {
+                    HStack {
+                        Text("Apps, categories and sites")
+                        Spacer()
+                        Text(blocklist.summary)
+                            .foregroundStyle(.secondary)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.bold())
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .disabled(controller.activeSession != nil)
+            } footer: {
+                Text("Changes apply to your next session, not the one running.")
+            }
+
+            Section("Session length") {
+                durationPicker(
+                    title: "Default",
+                    value: blocklist.defaultDuration,
+                    options: [15, 30, 45, 60, 90, 120, 180, 240]
+                ) { newValue in
+                    controller.updateDurations(default: newValue, minimum: blocklist.minimumDuration)
+                }
+
+                durationPicker(
+                    title: "Locked for at least",
+                    value: blocklist.minimumDuration,
+                    options: [0, 5, 15, 30, 45, 60, 90]
+                ) { newValue in
+                    controller.updateDurations(default: blocklist.defaultDuration, minimum: newValue)
+                }
+            }
+
+            Section {
+                EmptyView()
+            } footer: {
+                Text("Until the minimum has passed, tapping the brick won't end the session — that's what makes it a commitment rather than a switch. Emergency unlocks still work.")
+            }
+        }
+        .navigationTitle("What it blocks")
+        .navigationBarTitleDisplayMode(.inline)
+        .familyActivityPicker(isPresented: $pickerShown, selection: $selection)
+        .onChange(of: selection) { _, newValue in
+            guard loaded else { return }
+            persist(newValue)
+        }
+        .task {
+            if let existing = try? SelectionCoder.decode(blocklist.selectionData) {
+                selection = existing
+            }
+            loaded = true
+        }
+    }
+
+    private func durationPicker(
+        title: String,
+        value: TimeInterval,
+        options: [Double],
+        onChange: @escaping (TimeInterval) -> Void
+    ) -> some View {
+        Picker(title, selection: Binding(get: { value }, set: onChange)) {
+            ForEach(options, id: \.self) { minutes in
+                Text(minutes == 0 ? "No minimum" : Format.duration(.brickMinutes(minutes)))
+                    .tag(TimeInterval.brickMinutes(minutes))
+            }
+        }
+    }
+
+    private func persist(_ newValue: FamilyActivitySelection) {
+        let data = try? SelectionCoder.encode(newValue)
+        controller.updateBlocklist(
+            selectionData: data,
+            appCount: newValue.applicationTokens.count,
+            categoryCount: newValue.categoryTokens.count,
+            webDomainCount: newValue.webDomainTokens.count
+        )
+    }
+}
