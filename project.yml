@@ -20,6 +20,8 @@ targets:
       - Brick
     dependencies:
       - package: BrickKit
+      - target: BrickMonitor
+      - target: BrickShield
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.davideghiotto.brick
@@ -30,3 +32,39 @@ targets:
         INFOPLIST_KEY_NFCReaderUsageDescription: "Brick reads your brick's NFC tag to start and end a session."
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         CODE_SIGN_ENTITLEMENTS: Brick/Brick.entitlements
+
+  BrickMonitor:
+    type: app-extension
+    platform: iOS
+    sources:
+      - BrickMonitor
+    dependencies:
+      - package: BrickKit
+    info:
+      path: BrickMonitor/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).BrickMonitorExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.davideghiotto.brick.monitor
+        CODE_SIGN_ENTITLEMENTS: BrickMonitor/BrickMonitor.entitlements
+
+  BrickShield:
+    type: app-extension
+    platform: iOS
+    sources:
+      - BrickShield
+    dependencies:
+      - package: BrickKit
+    info:
+      path: BrickShield/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).BrickShieldExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.davideghiotto.brick.shield
+        CODE_SIGN_ENTITLEMENTS: BrickShield/BrickShield.entitlements

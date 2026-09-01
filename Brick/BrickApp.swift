@@ -42,6 +42,7 @@ final class AppModel {
         do {
             try await authorization.request()
             isAuthorized = authorization.isAuthorized
+            if isAuthorized { await controller.requestNotificationPermission() }
         } catch {
             present(error)
         }

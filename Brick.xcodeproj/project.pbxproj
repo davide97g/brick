@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		050570B8B871D2A123E2B46E /* StartSessionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */; };
+		0F7D7E70A98A48FA5867A59D /* BrickShieldExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11ABEE460A3565ED7E6B1B4 /* BrickShieldExtension.swift */; };
 		191A0100B7D7FAC4D6A37DE9 /* Authorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317A6A505487B087A65990B0 /* Authorization.swift */; };
+		1B74EDD59FE78636B80995A9 /* BrickMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC0363056E7271384B116F8 /* BrickMonitorExtension.swift */; };
 		1EA01D0EBDCC8D40A7B92390 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */; };
 		220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */; };
+		22BD4C0C835F63038B0B1004 /* BrickMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */; };
 		32A0E0CDAF6BAC38C953A388 /* CoreNFCTagReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */; };
 		32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */; };
@@ -18,8 +21,12 @@
 		42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6BE8D2070A8B46D72CC95A /* HomeView.swift */; };
 		493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314D801CEB699B3A5390680C /* Formatting.swift */; };
 		4A1CEB4F016CDABD1012F418 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF7454390531E65A0034E9C /* Theme.swift */; };
+		55CC96D0F5983E65E631C1FA /* BrickShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 523903C198F90E96FB1F3B0D /* BrickShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5B9003343BBBA2E5B5B3263F /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 93FCBE8981D780CE782E4452 /* BrickKit */; };
+		891D7874528A5D436F6054AB /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = D287EBC760C29BEA09CCFDDB /* BrickKit */; };
 		BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81391C961605212FB6128E92 /* BrickKit */; };
 		C0122450B1120A5A2DBF5DB9 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68240CED27BF312A3C469E50 /* AppEnvironment.swift */; };
+		CAD390D4B79FE498D0C8B661 /* UserNotificationsNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */; };
 		E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16FCF6027E4C442FD9F543B /* OnboardingView.swift */; };
 		E2CDC3E831ABE799FC11A8C5 /* SimulatorAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */; };
 		EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC32462D272224C9B1450DD /* RootView.swift */; };
@@ -27,18 +34,57 @@
 		F4DEFA130B77A6A10E13FAB1 /* BrickApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0579362ACF66DEEA3FD7FC57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8541A11882C2C52C4BBF99CC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 19F04B0CF8B9DDCDC6E17341;
+			remoteInfo = BrickMonitor;
+		};
+		08B9AF76F1DBCC1E6725B923 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8541A11882C2C52C4BBF99CC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 00EA1EE7372B3DB41518C966;
+			remoteInfo = BrickShield;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		25180CC73E32BC6795A6FD1C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				22BD4C0C835F63038B0B1004 /* BrickMonitor.appex in Embed Foundation Extensions */,
+				55CC96D0F5983E65E631C1FA /* BrickShield.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		00A86E285DED1B45A6A74368 /* BrickKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BrickKit; path = BrickKit; sourceTree = SOURCE_ROOT; };
 		02BF1B84BAC3F27089CFC2A0 /* BrickApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickApp.swift; sourceTree = "<group>"; };
+		04B84B8A36E64FD078050A54 /* BrickShield.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BrickShield.entitlements; sourceTree = "<group>"; };
+		1DF3AEFF186BF79EB81D38FC /* BrickMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BrickMonitor.entitlements; sourceTree = "<group>"; };
 		26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartSessionSheet.swift; sourceTree = "<group>"; };
 		314D801CEB699B3A5390680C /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		317A6A505487B087A65990B0 /* Authorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization.swift; sourceTree = "<group>"; };
 		37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreNFCTagReader.swift; sourceTree = "<group>"; };
 		4C56EFDBCDF7146197422B0D /* SessionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRing.swift; sourceTree = "<group>"; };
+		507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationsNotifier.swift; sourceTree = "<group>"; };
+		523903C198F90E96FB1F3B0D /* BrickShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		68240CED27BF312A3C469E50 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6FC32462D272224C9B1450DD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BC0363056E7271384B116F8 /* BrickMonitorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickMonitorExtension.swift; sourceTree = "<group>"; };
 		A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyUnlockButton.swift; sourceTree = "<group>"; };
+		AA5D9DBBA7DFFF9D64F51273 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AEE5301B45DD451CB4E17ECC /* Brick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Brick.entitlements; sourceTree = "<group>"; };
 		B16FCF6027E4C442FD9F543B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		B41B092FA54E265C0FCC0BF1 /* Brick.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Brick.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -46,8 +92,10 @@
 		BE6BE8D2070A8B46D72CC95A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorAdapters.swift; sourceTree = "<group>"; };
 		C46B837C294C909AE11C56F9 /* BlocklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlocklistView.swift; sourceTree = "<group>"; };
+		D11ABEE460A3565ED7E6B1B4 /* BrickShieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickShieldExtension.swift; sourceTree = "<group>"; };
 		E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityScheduler.swift; sourceTree = "<group>"; };
 		E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedSettingsShielding.swift; sourceTree = "<group>"; };
+		FD5932BD9E910D56AE681F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +107,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		331BC4DACC3B008E8C7D7548 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				891D7874528A5D436F6054AB /* BrickKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56FFCBE125C7EFD4F6441416 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B9003343BBBA2E5B5B3263F /* BrickKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -66,6 +130,8 @@
 			isa = PBXGroup;
 			children = (
 				B41B092FA54E265C0FCC0BF1 /* Brick.app */,
+				74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */,
+				523903C198F90E96FB1F3B0D /* BrickShield.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,9 +148,21 @@
 			isa = PBXGroup;
 			children = (
 				96243320245C2ACB581A18C0 /* Brick */,
+				D5049DDBFCA745A6646D8856 /* BrickMonitor */,
+				3D24EE956EEA5563F75150DF /* BrickShield */,
 				34D30A95CE6C3171C013472B /* Packages */,
 				2324578DF2E090B8BE18DA40 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		3D24EE956EEA5563F75150DF /* BrickShield */ = {
+			isa = PBXGroup;
+			children = (
+				04B84B8A36E64FD078050A54 /* BrickShield.entitlements */,
+				D11ABEE460A3565ED7E6B1B4 /* BrickShieldExtension.swift */,
+				AA5D9DBBA7DFFF9D64F51273 /* Info.plist */,
+			);
+			path = BrickShield;
 			sourceTree = "<group>";
 		};
 		4F46F5E02526EEFA40277A8B /* Home */ = {
@@ -114,6 +192,7 @@
 				E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */,
 				E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */,
 				C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */,
+				507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */,
 			);
 			path = Adapters;
 			sourceTree = "<group>";
@@ -160,19 +239,70 @@
 			path = Blocklist;
 			sourceTree = "<group>";
 		};
+		D5049DDBFCA745A6646D8856 /* BrickMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				1DF3AEFF186BF79EB81D38FC /* BrickMonitor.entitlements */,
+				7BC0363056E7271384B116F8 /* BrickMonitorExtension.swift */,
+				FD5932BD9E910D56AE681F7A /* Info.plist */,
+			);
+			path = BrickMonitor;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		00EA1EE7372B3DB41518C966 /* BrickShield */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 544A0197389C8C52D7337E53 /* Build configuration list for PBXNativeTarget "BrickShield" */;
+			buildPhases = (
+				BD20DA5FF1A2A54DC5511B3F /* Sources */,
+				56FFCBE125C7EFD4F6441416 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BrickShield;
+			packageProductDependencies = (
+				93FCBE8981D780CE782E4452 /* BrickKit */,
+			);
+			productName = BrickShield;
+			productReference = 523903C198F90E96FB1F3B0D /* BrickShield.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		19F04B0CF8B9DDCDC6E17341 /* BrickMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B713808AA6B4E37CAC6D5D0C /* Build configuration list for PBXNativeTarget "BrickMonitor" */;
+			buildPhases = (
+				8F72E60B6D2CCAFE243F7D72 /* Sources */,
+				331BC4DACC3B008E8C7D7548 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BrickMonitor;
+			packageProductDependencies = (
+				D287EBC760C29BEA09CCFDDB /* BrickKit */,
+			);
+			productName = BrickMonitor;
+			productReference = 74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		3C7F23EB15690F148AD66920 /* Brick */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 85A2B6AC7FC6BEC78FBF60DC /* Build configuration list for PBXNativeTarget "Brick" */;
 			buildPhases = (
 				F3970206CBE964FC86DDDAC6 /* Sources */,
 				01621D4076E43AB3CB614E12 /* Frameworks */,
+				25180CC73E32BC6795A6FD1C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8313DC0E76619643F99B1C35 /* PBXTargetDependency */,
+				45F024A27236DBEA36CA45FC /* PBXTargetDependency */,
 			);
 			name = Brick;
 			packageProductDependencies = (
@@ -191,6 +321,14 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					00EA1EE7372B3DB41518C966 = {
+						DevelopmentTeam = DA596D32QB;
+						ProvisioningStyle = Automatic;
+					};
+					19F04B0CF8B9DDCDC6E17341 = {
+						DevelopmentTeam = DA596D32QB;
+						ProvisioningStyle = Automatic;
+					};
 					3C7F23EB15690F148AD66920 = {
 						DevelopmentTeam = DA596D32QB;
 						ProvisioningStyle = Automatic;
@@ -215,11 +353,29 @@
 			projectRoot = "";
 			targets = (
 				3C7F23EB15690F148AD66920 /* Brick */,
+				19F04B0CF8B9DDCDC6E17341 /* BrickMonitor */,
+				00EA1EE7372B3DB41518C966 /* BrickShield */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8F72E60B6D2CCAFE243F7D72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B74EDD59FE78636B80995A9 /* BrickMonitorExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BD20DA5FF1A2A54DC5511B3F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F7D7E70A98A48FA5867A59D /* BrickShieldExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3970206CBE964FC86DDDAC6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -241,12 +397,74 @@
 				E2CDC3E831ABE799FC11A8C5 /* SimulatorAdapters.swift in Sources */,
 				050570B8B871D2A123E2B46E /* StartSessionSheet.swift in Sources */,
 				4A1CEB4F016CDABD1012F418 /* Theme.swift in Sources */,
+				CAD390D4B79FE498D0C8B661 /* UserNotificationsNotifier.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		45F024A27236DBEA36CA45FC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 00EA1EE7372B3DB41518C966 /* BrickShield */;
+			targetProxy = 08B9AF76F1DBCC1E6725B923 /* PBXContainerItemProxy */;
+		};
+		8313DC0E76619643F99B1C35 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 19F04B0CF8B9DDCDC6E17341 /* BrickMonitor */;
+			targetProxy = 0579362ACF66DEEA3FD7FC57 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		0077199CEE21FD9B3AF14313 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BrickShield/BrickShield.entitlements;
+				INFOPLIST_FILE = BrickShield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1D634DF520D11094D25C8C94 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BrickMonitor/BrickMonitor.entitlements;
+				INFOPLIST_FILE = BrickMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		39921AC35A58376958986EE9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BrickShield/BrickShield.entitlements;
+				INFOPLIST_FILE = BrickShield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		47A3A323D20D34DB6D372DB5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -414,9 +632,34 @@
 			};
 			name = Release;
 		};
+		931A80505FC58705F9D25875 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BrickMonitor/BrickMonitor.entitlements;
+				INFOPLIST_FILE = BrickMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		544A0197389C8C52D7337E53 /* Build configuration list for PBXNativeTarget "BrickShield" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39921AC35A58376958986EE9 /* Debug */,
+				0077199CEE21FD9B3AF14313 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		7DADC8C148AC0847C8086068 /* Build configuration list for PBXProject "Brick" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -435,6 +678,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		B713808AA6B4E37CAC6D5D0C /* Build configuration list for PBXNativeTarget "BrickMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				931A80505FC58705F9D25875 /* Debug */,
+				1D634DF520D11094D25C8C94 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -446,6 +698,14 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		81391C961605212FB6128E92 /* BrickKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BrickKit;
+		};
+		93FCBE8981D780CE782E4452 /* BrickKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BrickKit;
+		};
+		D287EBC760C29BEA09CCFDDB /* BrickKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = BrickKit;
 		};

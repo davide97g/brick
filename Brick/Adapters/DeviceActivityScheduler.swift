@@ -9,7 +9,7 @@ import Foundation
 /// intervals shorter than 15 minutes, which is why `TimeInterval.brickMinimumSession`
 /// exists.
 final class DeviceActivityScheduler: SessionScheduling, @unchecked Sendable {
-    static let activityName = DeviceActivityName("brick.session")
+    static let activityName = DeviceActivityName(BrickIdentifiers.deviceActivity)
 
     private let center = DeviceActivityCenter()
     private let calendar = Calendar.current

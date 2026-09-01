@@ -12,6 +12,7 @@ public final class BrickController {
     private let shielding: Shielding
     private let scheduler: SessionScheduling
     private let tagReader: TagReading
+    private let notifier: Notifying
     private let clock: Clock
 
     public init(
@@ -19,12 +20,14 @@ public final class BrickController {
         shielding: Shielding,
         scheduler: SessionScheduling,
         tagReader: TagReading,
+        notifier: Notifying = SilentNotifier(),
         clock: Clock = SystemClock()
     ) {
         self.store = store
         self.shielding = shielding
         self.scheduler = scheduler
         self.tagReader = tagReader
+        self.notifier = notifier
         self.clock = clock
         self.state = store.load()
     }
@@ -60,7 +63,12 @@ public final class BrickController {
         let plannedEnd = state.activeSession?.plannedEnd ?? now
         shielding.clear()
         scheduler.cancelScheduledEnd()
+        notifier.cancelSessionNotifications()
         persist { SessionEngine.close(&$0, reason: .scheduled, at: plannedEnd) }
+    }
+
+    public func requestNotificationPermission() async {
+        await notifier.requestPermission()
     }
 
     // MARK: Pairing
@@ -133,6 +141,7 @@ public final class BrickController {
             shielding.clear()
             throw error
         }
+        notifier.scheduleSessionNotifications(for: session)
         persist { $0.activeSession = session }
         lastError = nil
     }
@@ -162,6 +171,7 @@ public final class BrickController {
     private func finish(reason: EndReason) {
         shielding.clear()
         scheduler.cancelScheduledEnd()
+        notifier.cancelSessionNotifications()
         let timestamp = now
         persist { SessionEngine.close(&$0, reason: reason, at: timestamp) }
         lastError = nil

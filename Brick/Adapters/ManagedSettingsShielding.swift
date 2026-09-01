@@ -8,7 +8,7 @@ import ManagedSettings
 /// Settings written here survive app termination and reboot — that persistence
 /// is the point, and it's also why `reconcile()` exists on the controller.
 final class ManagedSettingsShielding: Shielding, @unchecked Sendable {
-    static let storeName = ManagedSettingsStore.Name("brick.session")
+    static let storeName = ManagedSettingsStore.Name(BrickIdentifiers.managedSettingsStore)
 
     private let store = ManagedSettingsStore(named: ManagedSettingsShielding.storeName)
 

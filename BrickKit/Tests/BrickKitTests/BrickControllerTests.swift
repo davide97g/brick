@@ -8,6 +8,7 @@ private struct Harness {
     let shielding = RecordingShielding()
     let scheduler = RecordingScheduler()
     let tagReader = StubTagReader(uid: "04A1B2C3D4E580")
+    let notifier = RecordingNotifier()
     let clock = TestClock()
     let controller: BrickController
 
@@ -29,6 +30,7 @@ private struct Harness {
             shielding: shielding,
             scheduler: scheduler,
             tagReader: tagReader,
+            notifier: notifier,
             clock: clock
         )
     }
@@ -156,6 +158,26 @@ struct BrickControllerTests {
         h.controller.reconcile()
         #expect(h.shielding.isShielded)
         #expect(h.controller.activeSession != nil)
+    }
+
+    @Test("starting queues the end notifications, ending cancels them")
+    func notificationsFollowTheSession() async throws {
+        let h = Harness()
+        try await h.controller.startSessionByTap(duration: .brickMinutes(60))
+        #expect(h.notifier.scheduled.count == 1)
+        #expect(h.notifier.cancelCount == 0)
+        h.clock.advance(by: .brickMinutes(30))
+        try await h.controller.endSessionByTap()
+        #expect(h.notifier.cancelCount == 1)
+    }
+
+    @Test("expiry cancels any notification still queued")
+    func expiryCancelsNotifications() async throws {
+        let h = Harness()
+        try await h.controller.startSessionByTap(duration: .brickMinutes(30))
+        h.clock.advance(by: .brickMinutes(31))
+        h.controller.reconcile()
+        #expect(h.notifier.cancelCount == 1)
     }
 
     @Test("unpairing is refused while a session is running")
