@@ -83,6 +83,9 @@ public enum SessionEngine {
         session.endReason = reason
         state.activeSession = nil
         state.history.append(session)
+        if state.history.count > BrickState.historyLimit {
+            state.history.removeFirst(state.history.count - BrickState.historyLimit)
+        }
         if reason == .emergency { state.emergency.record(at: now) }
     }
 }

@@ -22,8 +22,8 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             // A shield must never outlive its planned end, even if the monitor
             // extension never fired.
-            if phase == .active { model.controller.reconcile() }
+            if phase == .active { model.refreshEnforcement() }
         }
-        .task { model.controller.reconcile() }
+        .task { model.refreshEnforcement() }
     }
 }

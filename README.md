@@ -17,9 +17,14 @@ Core is built and tested. **Nothing real runs yet** — both required capabiliti
 Controls and NFC Tag Reading) are unavailable to free personal Apple developer teams, so a paid
 Apple Developer Program membership is required to run this on a device.
 
-- `BrickKit` — models, session rules, persistence. 30 tests, no Apple frameworks, runs anywhere.
+- `BrickKit` — models, session rules, persistence. 36 tests, no Apple frameworks, runs anywhere.
 - `Brick` — the SwiftUI app. Builds and runs in the Simulator against pretend adapters.
+- `BrickMonitor` — clears the shield at a session's planned end with the app not running.
+- `BrickShield` — the blocked-app screen: time left, and where your brick is.
 - `spikes/SpikeAShield` — the minimal probe that proved the entitlement gate.
+
+Both extensions compile and are embedded correctly, but neither has been observed running:
+that needs a device, which needs the membership.
 
 ## Design
 
@@ -32,6 +37,8 @@ timestamp. Everything Apple-framework-shaped sits behind a port:
 | `Shielding` | `ManagedSettingsShielding` | `PretendShielding` |
 | `SessionScheduling` | `DeviceActivityScheduler` | `PretendScheduler` |
 | `TagReading` | `CoreNFCTagReader` | `PretendTagReader` |
+| `TagWriting` | `CoreNFCTagWriter` | `PretendTagWriter` |
+| `Notifying` | `UserNotificationsNotifier` | same |
 
 `Brick/Adapters/AppEnvironment.swift` is the only file that knows which is which.
 

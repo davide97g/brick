@@ -27,6 +27,7 @@ enum AppEnvironment {
             shielding: PretendShielding(),
             scheduler: PretendScheduler(),
             tagReader: PretendTagReader(),
+            tagWriter: PretendTagWriter(),
             notifier: UserNotificationsNotifier()
         )
         #else
@@ -35,6 +36,7 @@ enum AppEnvironment {
             shielding: ManagedSettingsShielding(),
             scheduler: DeviceActivityScheduler(),
             tagReader: CoreNFCTagReader(),
+            tagWriter: CoreNFCTagWriter(),
             notifier: UserNotificationsNotifier()
         )
         #endif

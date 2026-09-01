@@ -12,6 +12,7 @@ public final class BrickController {
     private let shielding: Shielding
     private let scheduler: SessionScheduling
     private let tagReader: TagReading
+    private let tagWriter: TagWriting?
     private let notifier: Notifying
     private let clock: Clock
 
@@ -20,6 +21,7 @@ public final class BrickController {
         shielding: Shielding,
         scheduler: SessionScheduling,
         tagReader: TagReading,
+        tagWriter: TagWriting? = nil,
         notifier: Notifying = SilentNotifier(),
         clock: Clock = SystemClock()
     ) {
@@ -27,6 +29,7 @@ public final class BrickController {
         self.shielding = shielding
         self.scheduler = scheduler
         self.tagReader = tagReader
+        self.tagWriter = tagWriter
         self.notifier = notifier
         self.clock = clock
         self.state = store.load()
@@ -71,12 +74,46 @@ public final class BrickController {
         await notifier.requestPermission()
     }
 
+    /// Re-applies the shield for a session that is still running.
+    ///
+    /// Screen Time authorization can be revoked from Settings, which silently
+    /// invalidates the stored tokens and leaves a session that blocks nothing.
+    /// Re-applying on every foreground repairs that as soon as access is back.
+    ///
+    /// - Returns: `false` when the shield could not be applied, so the caller
+    ///   can say so rather than let the user believe they're blocked.
+    @discardableResult
+    public func reapplyShieldIfNeeded() -> Bool {
+        guard let session = state.activeSession, session.isActive else { return true }
+        do {
+            try shielding.apply(selectionData: state.blocklist.selectionData)
+            return true
+        } catch {
+            return false
+        }
+    }
+
     // MARK: Pairing
 
+    /// Writes an identity onto the tag when a writer is available, and falls
+    /// back to a plain read otherwise — a tag that is already locked, or a
+    /// build without write support, still pairs on its UID.
     public func pairBrick(placeNote: String = "") async throws {
         guard state.tag == nil else { throw BrickError.alreadyPaired }
-        let uid = try await tagReader.readTagUID()
-        persist { $0.tag = BrickTag(uid: uid, placeNote: placeNote, pairedAt: self.now) }
+        let identity = UUID()
+        let uid: String
+        if let tagWriter {
+            do {
+                uid = try await tagWriter.writeIdentity(identity)
+            } catch {
+                uid = try await tagReader.readTagUID()
+            }
+        } else {
+            uid = try await tagReader.readTagUID()
+        }
+        persist {
+            $0.tag = BrickTag(uid: uid, ndefID: identity, placeNote: placeNote, pairedAt: self.now)
+        }
     }
 
     public func updatePlaceNote(_ note: String) {

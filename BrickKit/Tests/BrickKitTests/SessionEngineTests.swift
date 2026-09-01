@@ -219,3 +219,19 @@ struct ReconcileTests {
         #expect(state.emergency.uses.isEmpty)
     }
 }
+
+@Suite("History")
+struct HistoryTests {
+    @Test("history is capped and keeps the most recent sessions")
+    func historyIsCapped() {
+        var state = pairedState()
+        for index in 0..<(BrickState.historyLimit + 25) {
+            let start = t0.addingTimeInterval(Double(index) * 3600)
+            state.activeSession = Session(startedAt: start, plannedEnd: start.addingTimeInterval(1800))
+            SessionEngine.close(&state, reason: .scheduled, at: start.addingTimeInterval(1800))
+        }
+        #expect(state.history.count == BrickState.historyLimit)
+        let expectedFirst = t0.addingTimeInterval(Double(25) * 3600)
+        #expect(state.history.first?.startedAt == expectedFirst)
+    }
+}

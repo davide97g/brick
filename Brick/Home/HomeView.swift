@@ -12,7 +12,19 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                if model.authorizationLost {
+                    warning(
+                        "Screen Time access is off",
+                        detail: "Nothing is being blocked. Turn it back on in Settings → Screen Time."
+                    )
+                } else if model.enforcementBroken {
+                    warning(
+                        "Not actually blocking",
+                        detail: "The blocked apps couldn't be applied. Re-pick them in Settings."
+                    )
+                }
+
                 if controller.activeSession != nil {
                     activeSession
                 } else {
@@ -41,6 +53,21 @@ struct HomeView: View {
             // monitor extension never fired, this clears the shield.
             controller.reconcile()
         }
+    }
+
+    private func warning(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Label(title, systemImage: "exclamationmark.triangle.fill")
+                .font(.subheadline.weight(.semibold))
+            Text(detail)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color.yellow.opacity(0.18), in: .rect(cornerRadius: 14))
+        .padding(.horizontal, 20)
+        .padding(.bottom, 8)
     }
 
     // MARK: Running

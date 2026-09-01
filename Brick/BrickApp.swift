@@ -23,6 +23,9 @@ final class AppModel {
     var isAuthorized: Bool
     var scanning = false
     var alert: AlertContent?
+    /// Set when a running session's shield could not be applied — the phone
+    /// says it's blocked while nothing actually is.
+    var enforcementBroken = false
 
     init(
         controller: BrickController? = nil,
@@ -32,6 +35,19 @@ final class AppModel {
         self.controller = controller ?? AppEnvironment.makeController()
         self.authorization = authorization
         self.isAuthorized = authorization.isAuthorized
+    }
+
+    /// Screen Time access was revoked from Settings while a brick is paired.
+    var authorizationLost: Bool {
+        !isAuthorized && controller.state.isPaired
+    }
+
+    /// Called on every foreground: re-reads authorization and repairs the
+    /// shield of a session that is still running.
+    func refreshEnforcement() {
+        isAuthorized = authorization.isAuthorized
+        controller.reconcile()
+        enforcementBroken = isAuthorized ? !controller.reapplyShieldIfNeeded() : false
     }
 
     var needsSetup: Bool {

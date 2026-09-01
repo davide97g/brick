@@ -180,6 +180,50 @@ struct BrickControllerTests {
         #expect(h.notifier.cancelCount == 1)
     }
 
+    @Test("a running session re-applies its shield on foreground")
+    func reapplyRestoresShield() async throws {
+        let h = Harness()
+        try await h.controller.startSessionByTap(duration: .brickMinutes(60))
+        h.shielding.clear()  // as if Screen Time access had been revoked
+        #expect(!h.shielding.isShielded)
+        #expect(h.controller.reapplyShieldIfNeeded())
+        #expect(h.shielding.isShielded)
+    }
+
+    @Test("re-applying is a no-op when nothing is running")
+    func reapplyIgnoresIdle() {
+        let h = Harness()
+        #expect(h.controller.reapplyShieldIfNeeded())
+        #expect(h.shielding.events.isEmpty)
+    }
+
+    @Test("re-applying reports failure instead of pretending to block")
+    func reapplyReportsFailure() async throws {
+        final class BrokenShielding: Shielding, @unchecked Sendable {
+            var applyCount = 0
+            func apply(selectionData: Data?) throws {
+                applyCount += 1
+                if applyCount > 1 { throw BrickError.emptyBlocklist }
+            }
+            func clear() {}
+        }
+        let store = InMemoryStateStore(
+            BrickState(
+                tag: BrickTag(uid: "04A1B2C3D4E580", pairedAt: Date()),
+                blocklist: BlocklistConfig(selectionData: Data([0x01]), appCount: 1)
+            )
+        )
+        let controller = BrickController(
+            store: store,
+            shielding: BrokenShielding(),
+            scheduler: RecordingScheduler(),
+            tagReader: StubTagReader(),
+            clock: TestClock()
+        )
+        try controller.startSession(duration: .brickMinutes(60))
+        #expect(!controller.reapplyShieldIfNeeded())
+    }
+
     @Test("unpairing is refused while a session is running")
     func cannotUnpairMidSession() async throws {
         let h = Harness()

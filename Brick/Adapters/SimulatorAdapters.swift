@@ -40,3 +40,11 @@ final class PretendTagReader: TagReading, @unchecked Sendable {
         return Self.uid
     }
 }
+
+/// Pretends to write and lock, returning the same UID the reader reports.
+final class PretendTagWriter: TagWriting, @unchecked Sendable {
+    func writeIdentity(_ id: UUID) async throws -> String {
+        try? await Task.sleep(for: .milliseconds(900))
+        return PretendTagReader.uid
+    }
+}

@@ -2,6 +2,10 @@ import Foundation
 
 /// Everything the app and its extensions need to agree on, in one Codable value.
 public struct BrickState: Codable, Equatable, Sendable {
+    /// The state file is read by two extensions under tight limits, so history
+    /// is capped rather than allowed to grow forever.
+    public static let historyLimit = 200
+
     public var tag: BrickTag?
     public var blocklist: BlocklistConfig
     public var activeSession: Session?
