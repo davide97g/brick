@@ -150,6 +150,7 @@ Deliberately not planned: streaks, points, scores, or anything that makes the ph
 ---
 
 <div align="center">
-<sub><b><a href="LICENSE">The Unlicense</a></b> — public domain. Software and hardware designs alike.<br>
-Copy it, sell it, print it, build a business on it. No attribution required.</sub>
+<sub><b><a href="LICENSE">The Unlicense</a></b> — released into the public domain.<br>
+This covers everything here, hardware designs included: 3D models, print profiles, tag layouts, dimensions.<br>
+Copy it, sell it, print it, remix it, build a business on it. No attribution required, though it's always welcome.</sub>
 </div>
