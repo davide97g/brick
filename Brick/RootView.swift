@@ -27,5 +27,6 @@ struct RootView: View {
             if phase == .active { model.refreshEnforcement() }
         }
         .task { model.refreshEnforcement() }
+        .task { await model.observeAuthorization() }
     }
 }

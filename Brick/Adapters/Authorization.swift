@@ -1,4 +1,5 @@
 import BrickKit
+import Combine
 import FamilyControls
 import Foundation
 import Observation
@@ -8,11 +9,28 @@ import Observation
 protocol AuthorizationProviding: AnyObject, Sendable {
     var isAuthorized: Bool { get }
     func request() async throws
+    /// Every subsequent value of the authorization status, starting with the
+    /// current one.
+    func statusUpdates() -> AsyncStream<Bool>
 }
 
 final class ScreenTimeAuthorization: AuthorizationProviding, @unchecked Sendable {
     var isAuthorized: Bool {
         AuthorizationCenter.shared.authorizationStatus == .approved
+    }
+
+    /// Read synchronously at launch, `authorizationStatus` answers
+    /// `.notDetermined` for the first moments of a cold start even when access
+    /// was granted long ago — observed on device. Trusting that first read
+    /// sends an authorized user back to onboarding and can hand
+    /// `FamilyActivityPicker` an empty list, so the status is observed rather
+    /// than sampled.
+    func statusUpdates() -> AsyncStream<Bool> {
+        AsyncStream { continuation in
+            let cancellable = AuthorizationCenter.shared.$authorizationStatus
+                .sink { continuation.yield($0 == .approved) }
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
     }
 
     /// `.individual` is the self-binding case: the device owner restricting
@@ -32,5 +50,9 @@ final class PretendAuthorization: AuthorizationProviding, @unchecked Sendable {
     func request() async throws {
         try? await Task.sleep(for: .milliseconds(400))
         UserDefaults.standard.set(true, forKey: Self.key)
+    }
+
+    func statusUpdates() -> AsyncStream<Bool> {
+        AsyncStream { $0.finish() }
     }
 }

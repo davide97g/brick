@@ -66,6 +66,16 @@ final class AppModel {
         !isAuthorized || !controller.state.hasKey || controller.state.blocklist.isEmpty
     }
 
+    /// Runs for the life of the scene: the first status a cold start reports is
+    /// not to be trusted.
+    func observeAuthorization() async {
+        for await approved in authorization.statusUpdates() {
+            guard approved != isAuthorized else { continue }
+            isAuthorized = approved
+            if approved { refreshEnforcement() }
+        }
+    }
+
     func requestAuthorization() async {
         do {
             try await authorization.request()

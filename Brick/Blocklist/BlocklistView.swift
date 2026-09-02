@@ -6,7 +6,11 @@ import SwiftUI
 /// bytes immediately and handed to BrickKit, which never decodes it.
 struct BlocklistView: View {
     @Environment(AppModel.self) private var model
-    @State private var selection = FamilyActivitySelection()
+    // `includeEntireCategory: true` is load-bearing. With the default `false`,
+    // picking a category hands back a token that shields nothing: the apps
+    // inside it are never covered, and a session blocks absolutely nothing
+    // while the UI claims "1 category". Verified on device.
+    @State private var selection = FamilyActivitySelection(includeEntireCategory: true)
     @State private var pickerShown = false
     @State private var loaded = false
 
@@ -72,7 +76,7 @@ struct BlocklistView: View {
         }
         .task {
             if let existing = try? SelectionCoder.decode(blocklist.selectionData) {
-                selection = existing
+                selection = SelectionCoder.wholeCategories(existing)
             }
             loaded = true
         }

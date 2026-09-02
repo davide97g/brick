@@ -45,4 +45,17 @@ enum SelectionCoder {
         guard let data else { return nil }
         return try JSONDecoder().decode(FamilyActivitySelection.self, from: data)
     }
+
+    /// `includeEntireCategory` is fixed at init and survives a round trip, so a
+    /// selection stored by a build that used the default `false` keeps shielding
+    /// nothing for its categories. Carrying the tokens into a whole-category
+    /// selection is what makes an existing blocklist behave once re-picked.
+    static func wholeCategories(_ selection: FamilyActivitySelection) -> FamilyActivitySelection {
+        guard !selection.includeEntireCategory else { return selection }
+        var migrated = FamilyActivitySelection(includeEntireCategory: true)
+        migrated.applicationTokens = selection.applicationTokens
+        migrated.categoryTokens = selection.categoryTokens
+        migrated.webDomainTokens = selection.webDomainTokens
+        return migrated
+    }
 }
