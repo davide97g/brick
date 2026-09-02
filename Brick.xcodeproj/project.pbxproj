@@ -17,6 +17,7 @@
 		2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */; };
 		32A0E0CDAF6BAC38C953A388 /* CoreNFCTagReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */; };
 		32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */; };
+		3B95D2353954E418E8BE0A39 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 30AFE8BD1B6BD6405B599985 /* PrivacyInfo.xcprivacy */; };
 		4072159F7D84467B2EFAB7C2 /* BlocklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46B837C294C909AE11C56F9 /* BlocklistView.swift */; };
 		42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6BE8D2070A8B46D72CC95A /* HomeView.swift */; };
 		493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314D801CEB699B3A5390680C /* Formatting.swift */; };
@@ -30,6 +31,7 @@
 		BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEAE041CD91BE708D875220 /* ListStyling.swift */; };
 		C0122450B1120A5A2DBF5DB9 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68240CED27BF312A3C469E50 /* AppEnvironment.swift */; };
 		CAD390D4B79FE498D0C8B661 /* UserNotificationsNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */; };
+		D4FB1D70F137CCD6F42A6F6B /* DemoTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6DF3674DC5E09E6ACD87BC /* DemoTag.swift */; };
 		E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16FCF6027E4C442FD9F543B /* OnboardingView.swift */; };
 		E2CDC3E831ABE799FC11A8C5 /* SimulatorAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */; };
 		EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC32462D272224C9B1450DD /* RootView.swift */; };
@@ -76,6 +78,7 @@
 		1DEAE041CD91BE708D875220 /* ListStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListStyling.swift; sourceTree = "<group>"; };
 		1DF3AEFF186BF79EB81D38FC /* BrickMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BrickMonitor.entitlements; sourceTree = "<group>"; };
 		26B2C6A01CA56C22A32D4F93 /* StartSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartSessionSheet.swift; sourceTree = "<group>"; };
+		30AFE8BD1B6BD6405B599985 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		314D801CEB699B3A5390680C /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		317A6A505487B087A65990B0 /* Authorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization.swift; sourceTree = "<group>"; };
 		37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreNFCTagReader.swift; sourceTree = "<group>"; };
@@ -87,6 +90,7 @@
 		6FC32462D272224C9B1450DD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BC0363056E7271384B116F8 /* BrickMonitorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickMonitorExtension.swift; sourceTree = "<group>"; };
+		7D6DF3674DC5E09E6ACD87BC /* DemoTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoTag.swift; sourceTree = "<group>"; };
 		85AD41481B81CFEAF0DB6C6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A25C17CB4A62EFD626D3324B /* EmergencyUnlockButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyUnlockButton.swift; sourceTree = "<group>"; };
 		AA5D9DBBA7DFFF9D64F51273 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -196,6 +200,7 @@
 				317A6A505487B087A65990B0 /* Authorization.swift */,
 				37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */,
 				B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */,
+				7D6DF3674DC5E09E6ACD87BC /* DemoTag.swift */,
 				E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */,
 				E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */,
 				C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */,
@@ -227,6 +232,7 @@
 			isa = PBXGroup;
 			children = (
 				85AD41481B81CFEAF0DB6C6D /* Assets.xcassets */,
+				30AFE8BD1B6BD6405B599985 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -383,6 +389,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB79BB1AF60BD992E133F9A2 /* Assets.xcassets in Resources */,
+				3B95D2353954E418E8BE0A39 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +422,7 @@
 				F4DEFA130B77A6A10E13FAB1 /* BrickApp.swift in Sources */,
 				32A0E0CDAF6BAC38C953A388 /* CoreNFCTagReader.swift in Sources */,
 				A90FF1160C4B1231F1F6F36D /* CoreNFCTagWriter.swift in Sources */,
+				D4FB1D70F137CCD6F42A6F6B /* DemoTag.swift in Sources */,
 				2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */,
 				220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */,
 				493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */,
@@ -531,6 +539,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = DA596D32QB;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -550,6 +559,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -568,6 +578,7 @@
 				CODE_SIGN_ENTITLEMENTS = Brick/Brick.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -579,7 +590,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick;
 				PRODUCT_NAME = Brick;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -618,6 +629,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = DA596D32QB;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -631,6 +643,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -648,6 +661,7 @@
 				CODE_SIGN_ENTITLEMENTS = Brick/Brick.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -659,7 +673,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.davideghiotto.brick;
 				PRODUCT_NAME = Brick;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

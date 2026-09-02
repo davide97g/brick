@@ -18,6 +18,8 @@ struct BrickApp: App {
 final class AppModel {
     let controller: BrickController
     let authorization: AuthorizationProviding
+    /// App Review's way past the missing brick. See `DemoTagAccess`.
+    let demoTag = DemoTagAccess()
 
     var isAuthorized: Bool
     var scanning = false

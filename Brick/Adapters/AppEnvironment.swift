@@ -31,12 +31,23 @@ enum AppEnvironment {
             notifier: UserNotificationsNotifier()
         )
         #else
+        // Real NFC, unless App Review has entered the demo code — then the
+        // Simulator stand-ins, which are the only way to review an app whose
+        // every entry point is a physical tag.
         BrickController(
             store: makeStore(),
             shielding: ManagedSettingsShielding(),
             scheduler: DeviceActivityScheduler(),
-            tagReader: CoreNFCTagReader(),
-            tagWriter: CoreNFCTagWriter(),
+            tagReader: SwitchingTagReader(
+                primary: CoreNFCTagReader(),
+                alternate: PretendTagReader(),
+                useAlternate: { DemoTagAccess.isEnabledNow }
+            ),
+            tagWriter: SwitchingTagWriter(
+                primary: CoreNFCTagWriter(),
+                alternate: PretendTagWriter(),
+                useAlternate: { DemoTagAccess.isEnabledNow }
+            ),
             notifier: UserNotificationsNotifier()
         )
         #endif

@@ -19,13 +19,12 @@ public final class RecordingTagWriter: TagWriting, @unchecked Sendable {
 
     public init(uid: String = "04A1B2C3D4E580") { self.uid = uid }
 
-    public var written: [UUID] {
-        lock.lock(); defer { lock.unlock() }
-        return _written
-    }
+    public var written: [UUID] { lock.withLock { _written } }
 
     public func writeIdentity(_ id: UUID) async throws -> String {
-        lock.lock(); _written.append(id); lock.unlock()
+        // Scoped locking: a bare lock()/unlock() pair is unavailable from an
+        // async context under Swift 6.
+        lock.withLock { _written.append(id) }
         return uid
     }
 }

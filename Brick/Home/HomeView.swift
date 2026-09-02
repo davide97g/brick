@@ -62,7 +62,8 @@ struct HomeView: View {
 
     private var settingsPreviewBinding: Binding<Bool> {
         #if DEBUG
-        Binding(get: { model.uiPreview == "settings" }, set: { _ in })
+        // "blocklist" lives one push deeper, so Settings has to open first.
+        Binding(get: { model.uiPreview == "settings" || model.uiPreview == "blocklist" }, set: { _ in })
         #else
         .constant(false)
         #endif

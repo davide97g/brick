@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var placeNote = ""
+    @State private var reviewCode = ""
 
     private var controller: BrickController { model.controller }
 
@@ -76,6 +77,35 @@ struct SettingsView: View {
             }
 
             Section {
+                if model.demoTag.isEnabled {
+                    Button("Turn off demo tag") { model.demoTag.disable() }
+                        .foregroundStyle(Theme.oxide)
+                } else {
+                    TextField("Access code", text: $reviewCode, prompt: Text("access code"))
+                        .foregroundStyle(Theme.chalk)
+                        .monospaced()
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.characters)
+                        .onSubmit {
+                            if !model.demoTag.enable(withCode: reviewCode) {
+                                model.alert = AlertContent(
+                                    title: "That code isn't right",
+                                    message: "Leave this alone unless you were given a code."
+                                )
+                            }
+                            reviewCode = ""
+                        }
+                }
+            } header: {
+                InkSectionHeader(text: "App Review")
+            } footer: {
+                Text(model.demoTag.isEnabled
+                     ? "Demo tag is on. Sessions start and end without an NFC tag, and the brick stops being the way in. Turn it off to use your own brick."
+                     : "For App Review. A code here replaces the NFC tag with a simulated one, so the app can be tested without a brick.")
+                    .foregroundStyle(Theme.ash)
+            }
+
+            Section {
                 EmptyView()
             } footer: {
                 Text("Brick keeps everything on this iPhone. No account, no sync, no analytics, no network requests.")
@@ -83,7 +113,17 @@ struct SettingsView: View {
             }
         }
         .inkList("Settings")
+        .navigationDestination(isPresented: blocklistPreviewBinding) { BlocklistView() }
         .task { placeNote = controller.state.tag?.placeNote ?? "" }
         .onChange(of: placeNote) { _, newValue in controller.updatePlaceNote(newValue) }
+    }
+
+    /// Screenshot hook: `-uiPreview blocklist` pushes straight through to it.
+    private var blocklistPreviewBinding: Binding<Bool> {
+        #if DEBUG
+        Binding(get: { model.uiPreview == "blocklist" }, set: { _ in })
+        #else
+        .constant(false)
+        #endif
     }
 }
