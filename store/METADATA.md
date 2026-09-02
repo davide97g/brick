@@ -7,7 +7,7 @@ rather than in a web form. Character limits are Apple's.
 
 | Field | Value |
 |---|---|
-| Name (30) | `Brick — leave your phone` |
+| Name (30) | `buriko` — as created in App Store Connect. The object it pairs with is still called a brick throughout the copy; the app is what's named buriko. |
 | Subtitle (30) | `A session you walk away from` |
 | Bundle ID | `com.davideghiotto.brick` |
 | SKU | `brick-ios-001` |
@@ -24,7 +24,7 @@ is the walk back to it, and only after the time you agreed to.
 
 ## Description (4000)
 
-Brick pairs your phone with one small object you print yourself.
+buriko pairs your phone with one small object you print yourself: a brick.
 
 Tap the brick and pick a length. The apps you chose go behind a shield. Then you leave the brick
 where it is — on a shelf, in another room, at home — and take your phone with you. The only
@@ -61,7 +61,7 @@ app.
 
 **One thing no app can fix**
 
-Deleting Brick removes every restriction it applied. If you want that door shut, turn on
+Deleting buriko removes every restriction it applied. If you want that door shut, turn on
 Settings → Screen Time → Content & Privacy Restrictions → App Deletion → Don't Allow.
 
 ## Keywords (100, comma-separated, no spaces)
@@ -98,7 +98,7 @@ answered at build time and never asked per upload.
 Paste this into App Store Connect verbatim. **Demo access code: `BRICK-REVIEW`** — enter it under
 Settings → App Review. Fill the demo-account fields with any placeholder; there is no account.
 
-> Brick pairs your iPhone with a physical NFC tag. Tapping the tag starts a Screen Time session;
+> buriko pairs your iPhone with a physical NFC tag. Tapping the tag starts a Screen Time session;
 > tapping it again ends one, but only after the minimum duration you chose. Everything is local:
 > no account, no server, no networking code of any kind.
 >
@@ -114,7 +114,7 @@ Settings → App Review. Fill the demo-account fields with any placeholder; ther
 >    makes no parental-control claim.
 > 2. Choose apps to block, then pick a session length. 15 minutes is the shortest the app offers
 >    because `DeviceActivitySchedule` rejects anything shorter.
-> 3. Tap "Tap your brick to start". Blocked apps now show Brick's shield screen.
+> 3. Tap "Tap your brick to start". Blocked apps now show the app's shield screen.
 > 4. To end early: tap the brick again once the minimum has passed, or use "Hold to unlock" — an
 >    emergency unlock, three per rolling seven days, behind a ten-second press. That is the
 >    fastest way to end a session during review.

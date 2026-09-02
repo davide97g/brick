@@ -88,6 +88,12 @@ The code is in the review notes in `store/METADATA.md`.
 The code being public in this repository costs nothing: anyone wanting out of a session can
 already delete the app, which onboarding states plainly.
 
+## Name
+
+The app ships as **buriko** on the App Store; the repository, the code and the physical object
+are all still Brick. Listing copy in `store/METADATA.md` follows that split — buriko is the app,
+the brick is the thing you leave behind.
+
 ## Still to do
 
 - Create the App Store Connect record and fill it from `store/METADATA.md`, then upload the build.
