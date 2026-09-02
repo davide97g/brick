@@ -17,6 +17,13 @@ struct SettingsView: View {
                     Text("What it blocks").foregroundStyle(Theme.chalk)
                 }
 
+                LabeledContent {
+                    Text(controller.unlockMethod == .brick ? "The brick" : controller.biometricName)
+                        .foregroundStyle(Theme.ash)
+                } label: {
+                    Text("Way in and out").foregroundStyle(Theme.chalk)
+                }
+
                 if let tag = controller.state.tag {
                     LabeledContent {
                         Text(String(tag.uid.suffix(6)))
@@ -31,30 +38,51 @@ struct SettingsView: View {
                     } label: {
                         Text("Paired").foregroundStyle(Theme.chalk)
                     }
-                }
 
-                TextField("Where you keep it", text: $placeNote, prompt: Text("on your desk"))
-                    .foregroundStyle(Theme.chalk)
-                    .onSubmit { controller.updatePlaceNote(placeNote) }
+                    // Only meaningful when there is an object to be somewhere.
+                    TextField("Where you keep it", text: $placeNote, prompt: Text("on your desk"))
+                        .foregroundStyle(Theme.chalk)
+                        .onSubmit { controller.updatePlaceNote(placeNote) }
+                }
             } header: {
-                InkSectionHeader(text: "Your brick")
+                InkSectionHeader(text: controller.state.isPaired ? "Your brick" : "Your setup")
             }
 
             Section {
-                Button("Unpair brick") {
-                    do {
-                        try controller.unpairBrick()
-                    } catch {
-                        model.present(error)
+                if controller.unlockMethod == .brick {
+                    Button("Use \(controller.biometricName) instead") {
+                        Task { await model.scan { try await controller.useBiometricUnlock() } }
                     }
+                    .foregroundStyle(controller.canSwitchKey ? Theme.chalk : Theme.graphite)
+                    .disabled(!controller.canSwitchKey)
+                } else {
+                    Button(controller.state.isPaired ? "Go back to the brick" : "Pair a brick") {
+                        Task { await switchToBrick() }
+                    }
+                    .foregroundStyle(model.scanning ? Theme.graphite : Theme.chalk)
+                    .disabled(model.scanning || controller.activeSession != nil)
                 }
-                .foregroundStyle(controller.activeSession != nil ? Theme.graphite : Theme.oxide)
-                .disabled(controller.activeSession != nil)
             } footer: {
-                Text(controller.activeSession != nil
-                     ? "You can't unpair while a session is running."
-                     : "Pairing a different brick starts from scratch.")
-                    .foregroundStyle(Theme.ash)
+                Text(keyFooter).foregroundStyle(Theme.ash)
+            }
+
+            if controller.state.isPaired {
+                Section {
+                    Button("Unpair brick") {
+                        do {
+                            try controller.unpairBrick()
+                        } catch {
+                            model.present(error)
+                        }
+                    }
+                    .foregroundStyle(controller.activeSession != nil ? Theme.graphite : Theme.oxide)
+                    .disabled(controller.activeSession != nil)
+                } footer: {
+                    Text(controller.activeSession != nil
+                         ? "You can't unpair while a session is running."
+                         : "Pairing a different brick starts from scratch.")
+                        .foregroundStyle(Theme.ash)
+                }
             }
 
             if !controller.state.history.isEmpty {
@@ -116,6 +144,31 @@ struct SettingsView: View {
         .navigationDestination(isPresented: blocklistPreviewBinding) { BlocklistView() }
         .task { placeNote = controller.state.tag?.placeNote ?? "" }
         .onChange(of: placeNote) { _, newValue in controller.updatePlaceNote(newValue) }
+    }
+
+    /// Switching back means having a brick again: pair one if there is none.
+    private func switchToBrick() async {
+        await model.scan {
+            if controller.state.isPaired {
+                try controller.useBrickUnlock()
+            } else {
+                try await controller.pairBrick()
+            }
+        }
+    }
+
+    private var keyFooter: String {
+        if controller.activeSession != nil {
+            return "You can't change the way out while a session is running."
+        }
+        switch controller.unlockMethod {
+        case .brick:
+            return controller.biometricsAvailable
+                ? "\(controller.biometricName) works when you have no brick. It is weaker: the key stays in your hand, so only the minimum duration and your emergency unlocks hold."
+                : "\(controller.biometricName) isn't set up on this iPhone, so the brick is the only way out."
+        case .biometric:
+            return "\(controller.biometricName) starts and ends sessions. The brick is the stronger version: the way out sits across the room."
+        }
     }
 
     /// Screenshot hook: `-uiPreview blocklist` pushes straight through to it.

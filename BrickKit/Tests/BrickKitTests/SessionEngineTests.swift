@@ -32,6 +32,17 @@ struct StartTests {
         }
     }
 
+    @Test("accepts biometrics in place of a brick")
+    func biometricsStandInForABrick() throws {
+        var state = pairedState()
+        state.tag = nil
+        state.unlock = .biometric
+        let session = try SessionEngine.validateStart(
+            state: state, duration: .brickMinutes(60), now: t0
+        )
+        #expect(session.plannedEnd == t0.addingTimeInterval(.brickMinutes(60)))
+    }
+
     @Test("requires a non-empty blocklist")
     func requiresBlocklist() {
         var state = pairedState()
@@ -233,5 +244,44 @@ struct HistoryTests {
         #expect(state.history.count == BrickState.historyLimit)
         let expectedFirst = t0.addingTimeInterval(Double(25) * 3600)
         #expect(state.history.first?.startedAt == expectedFirst)
+    }
+}
+
+@Suite("Ending without a brick")
+struct BiometricEndTests {
+    private func biometricState(minimumDuration: TimeInterval, session: Session) -> BrickState {
+        var state = pairedState(minimumDuration: minimumDuration, activeSession: session)
+        state.tag = nil
+        state.unlock = .biometric
+        return state
+    }
+
+    @Test("refuses before the minimum duration, exactly as the brick does")
+    func refusesBeforeMinimum() {
+        let session = Session(startedAt: t0, plannedEnd: t0.addingTimeInterval(.brickMinutes(90)))
+        let state = biometricState(minimumDuration: .brickMinutes(30), session: session)
+        #expect(throws: BrickError.tooEarlyToEnd(availableAt: t0.addingTimeInterval(.brickMinutes(30)))) {
+            try SessionEngine.validateEnd(state: state, now: t0.addingTimeInterval(.brickMinutes(29)))
+        }
+    }
+
+    @Test("opens exactly at the minimum")
+    func opensAtTheMinimum() throws {
+        let session = Session(startedAt: t0, plannedEnd: t0.addingTimeInterval(.brickMinutes(90)))
+        let state = biometricState(minimumDuration: .brickMinutes(30), session: session)
+        let ended = try SessionEngine.validateEnd(
+            state: state, now: t0.addingTimeInterval(.brickMinutes(30))
+        )
+        #expect(ended.id == session.id)
+    }
+
+    @Test("refuses when nothing is running")
+    func refusesWithoutASession() {
+        var state = pairedState()
+        state.tag = nil
+        state.unlock = .biometric
+        #expect(throws: BrickError.noActiveSession) {
+            try SessionEngine.validateEnd(state: state, now: t0)
+        }
     }
 }

@@ -48,7 +48,7 @@ class BrickShieldExtension: ShieldConfigurationDataSource {
                 color: .white
             ),
             subtitle: ShieldConfiguration.Label(
-                text: state?.tag?.whereItIs ?? "Your brick has the way out.",
+                text: ShieldCopy.wayOut(state),
                 color: UIColor.white.withAlphaComponent(0.7)
             )
         )
@@ -56,6 +56,16 @@ class BrickShieldExtension: ShieldConfigurationDataSource {
 }
 
 enum ShieldCopy {
+    /// The extension can't ask which biometry this phone has, so the biometric
+    /// line names none — it points at the app, where the real prompt lives.
+    static func wayOut(_ state: BrickState?) -> String {
+        guard let state else { return "Your brick has the way out." }
+        switch state.unlock {
+        case .brick: return state.tag?.whereItIs ?? "Your brick has the way out."
+        case .biometric: return "Unlock in Brick, once the gate opens."
+        }
+    }
+
     /// "43 minutes left" / "1h 12m left" — coarse on purpose. A ticking second
     /// counter would invite watching it.
     static func remaining(_ interval: TimeInterval) -> String {

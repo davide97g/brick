@@ -10,6 +10,10 @@ public enum BrickError: Error, Equatable, Sendable {
     case noActiveSession
     case tooEarlyToEnd(availableAt: Date)
     case emergencyQuotaExhausted(replenishesAt: Date?)
+    case biometricUnavailable
+    case biometricFailed
+    /// The user dismissed the prompt. Not an error worth an alert.
+    case biometricCancelled
 }
 
 extension BrickError: LocalizedError {
@@ -35,6 +39,12 @@ extension BrickError: LocalizedError {
             return "Not yet."
         case .emergencyQuotaExhausted:
             return "No emergency unlocks left."
+        case .biometricUnavailable:
+            return "Face ID or Touch ID isn't set up on this iPhone."
+        case .biometricFailed:
+            return "That didn't unlock."
+        case .biometricCancelled:
+            return "Cancelled."
         }
     }
 }

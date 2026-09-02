@@ -53,11 +53,17 @@ phone matter more, and the whole value of this app is not caring about it.
 • The app never learns which apps you blocked. Apple hands it opaque tokens, and it stores them
   without ever decoding them.
 
+**No brick yet?**
+
+Face ID can stand in for one. Sessions start and end the same way, and the minimum duration and
+the emergency quota are identical — but the key is in your hand instead of across the room, and
+the app says so where you choose it. Pair a brick later and it takes over.
+
 **What you need**
 
 An NFC tag — an NTAG215 sticker or card costs about a euro — and, if you want the object,
 a printed shell. The models and print profiles are public domain, in the same repository as the
-app.
+app. Without either, Face ID gets you started.
 
 **One thing no app can fix**
 
@@ -106,7 +112,14 @@ Settings → App Review. Fill the demo-account fields with any placeholder; ther
 > Open Settings (the control in the top right of the main screen), scroll to **App Review**, and
 > enter the code **BRICK-REVIEW**. The app then uses a simulated tag: "Tap your brick" buttons
 > complete immediately, so you can pair, start a session and end one with no hardware. A banner
-> in Settings says the demo tag is on, and it can be turned off there.
+> in Settings says the demo tag is on, and it can be turned off there. The code also swaps the
+> Face ID prompt for a simulated one, so a review device with no enrolled face is not blocked
+> either.
+>
+> **Face ID as a second path.** A user with no tag can choose Face ID during setup ("No brick
+> yet? Use Face ID instead") and start and end sessions with it. The same minimum duration and
+> the same emergency quota apply. Face ID is used only as an on-device gesture of intent — no
+> biometric data is read, stored or transmitted.
 >
 > **A full pass takes about two minutes:**
 > 1. Grant Screen Time access when asked. Brick requests Family Controls for the individual case

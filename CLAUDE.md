@@ -16,6 +16,10 @@ These are confirmed by experiment, not assumed. Don't re-litigate them.
 - **`DeviceActivitySchedule` refuses intervals shorter than 15 minutes.** `TimeInterval.brickMinimumSession` encodes this; the UI must never offer less.
 - **A shield cannot open the host app.** `ShieldActionResponse` is `.close` / `.defer` / `.none` only. Any design that needs "tap the shield to unlock" is dead on arrival.
 - **Deleting the app clears all restrictions.** Unfixable from inside. It's stated in onboarding; don't pretend otherwise anywhere else.
+- **Biometrics are a weaker key, never a stronger one.** `UnlockMethod.biometric` exists so an
+  app with no printed brick is usable at all. It changes *who holds the key*, nothing else: the
+  minimum duration, the emergency quota and the scheduled end are identical. Never present it as
+  equivalent to the brick, and never make it the default.
 - **`ApplicationToken`s are opaque.** The app cannot see which apps the user picked, and nothing should be written that assumes it can.
 
 ## Commands
@@ -47,6 +51,10 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 7. **The shield must never outlive its planned end.** Three independent paths guarantee this: `BrickMonitor.intervalDidEnd`, `reconcile()` on foreground, and the one-second tick while `HomeView` is visible. Don't remove one on the grounds that another covers it.
 8. **Never leave a shield up without a scheduled way down.** `startSession` rolls the shield back if scheduling throws. Preserve that ordering.
 
+9. **The gate is one rule, not two.** `SessionEngine.validateEnd` owns "has the minimum passed";
+   `validateTapEnd` adds the UID check on top of it. A new way out adds an *identity* check and
+   calls `validateEnd` — it never re-implements the gate.
+
 ## Gotchas
 
 - **`project.yml` is the source of truth.** `Brick.xcodeproj` is generated and committed for convenience; edits made in Xcode's project editor are lost on the next `xcodegen generate`.
@@ -55,9 +63,15 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 - **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (app target) is the only encoder/decoder. `BlocklistConfig` caches the counts so the UI can describe a selection without decoding it.
 - **Screen Time access can be revoked from Settings mid-session**, silently invalidating tokens. `reapplyShieldIfNeeded()` repairs it on foreground and reports failure; the UI shows a banner rather than letting the countdown lie.
 - **Extension code runs out of process under tight time and memory limits.** Keep `BrickMonitor` trivial.
+- **`BrickState` decodes field by field.** `load()` swallows any decode error and returns an
+  empty state, so one new non-optional field would silently unpair every existing user. Add
+  fields to `init(from:)` with `decodeIfPresent` and a default; `StateStoreTests` guards it.
 - **Store submission state lives in `store/`.** `SUBMISSION.md` is the running record of what is done, blocked and unverified; `METADATA.md` holds the listing copy and review notes. Update them when any of it changes.
 - **Don't put persistent chrome inside a paged `TabView`.** A `PaperCard` placed in each page slides a second copy of itself into view on every swipe, and its bottom safe-area inset doesn't resolve, so it renders cropped. Keep the card and the dots outside the `TabView`; only content pages swipe.
-- **App Review has no brick.** `DemoTagAccess` + `SwitchingTagReader`/`SwitchingTagWriter` swap in the pretend tag on device when the code in `store/METADATA.md` is entered under Settings → App Review. It must stay visible in the UI while on: an app that silently stopped needing the object would be lying about what it is.
+- **App Review has no brick, and may have no enrolled face.** `DemoTagAccess` +
+  `SwitchingTagReader`/`SwitchingTagWriter`/`SwitchingBiometrics` swap in the pretend tag *and*
+  the pretend prompt on device when the code in `store/METADATA.md` is entered under
+  Settings → App Review. It must stay visible in the UI while on: an app that silently stopped needing the object would be lying about what it is.
 - **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview onboard<N>` exists so all four can be.
 
 ## Tests

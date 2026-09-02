@@ -74,6 +74,20 @@ struct OnboardingView: View {
         }
     }
 
+    private var keyStepTitle: String {
+        controller.unlockMethod == .biometric ? "\(controller.biometricName) is the key" : "Pair your brick"
+    }
+
+    private var keyStepDetail: String {
+        switch controller.unlockMethod {
+        case .biometric:
+            return "No brick. The way out is in your hand — only the minimum duration holds."
+        case .brick:
+            return controller.state.tag.map { "Paired \(Format.day($0.pairedAt))" }
+                ?? "Hold your iPhone near it."
+        }
+    }
+
     private func advance() {
         withAnimation(.smooth(duration: 0.45)) {
             page = min(page + 1, Self.pageCount - 1)
@@ -150,18 +164,35 @@ struct OnboardingView: View {
                             Button("Allow") { Task { await model.requestAuthorization() } }
                         }
 
-                        step(
-                            index: 2,
-                            title: "Pair your brick",
-                            detail: controller.state.tag.map { "Paired \(Format.day($0.pairedAt))" }
-                                ?? "Hold your iPhone near it.",
-                            done: controller.state.isPaired,
-                            enabled: model.isAuthorized
-                        ) {
-                            Button(model.scanning ? "Scanning" : "Scan") {
-                                Task { await model.scan { try await controller.pairBrick() } }
+                        VStack(alignment: .leading, spacing: 12) {
+                            step(
+                                index: 2,
+                                title: keyStepTitle,
+                                detail: keyStepDetail,
+                                done: controller.state.hasKey,
+                                enabled: model.isAuthorized
+                            ) {
+                                Button(model.scanning ? "Scanning" : "Scan") {
+                                    Task { await model.scan { try await controller.pairBrick() } }
+                                }
+                                .disabled(model.scanning)
                             }
-                            .disabled(model.scanning)
+
+                            // The brick is the product, so this is a plain line
+                            // of text rather than a second button: a way past a
+                            // brick that doesn't exist yet, not an equal choice.
+                            if !controller.state.hasKey,
+                               model.isAuthorized,
+                               controller.biometricsAvailable {
+                                Button("No brick yet? Use \(controller.biometricName) instead.") {
+                                    Task { await model.scan { try await controller.useBiometricUnlock() } }
+                                }
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.ash)
+                                .underline()
+                                .padding(.leading, 42)
+                                .disabled(model.scanning)
+                            }
                         }
 
                         step(
@@ -169,7 +200,7 @@ struct OnboardingView: View {
                             title: "Choose what it blocks",
                             detail: controller.state.blocklist.summary,
                             done: !controller.state.blocklist.isEmpty,
-                            enabled: controller.state.isPaired
+                            enabled: controller.state.hasKey
                         ) {
                             NavigationLink("Choose") { BlocklistView() }
                         }

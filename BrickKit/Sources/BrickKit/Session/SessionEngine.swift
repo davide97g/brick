@@ -14,7 +14,7 @@ public enum SessionEngine {
         duration: TimeInterval,
         now: Date
     ) throws -> Session {
-        guard state.isPaired else { throw BrickError.notPaired }
+        guard state.hasKey else { throw BrickError.notPaired }
         guard !state.blocklist.isEmpty else { throw BrickError.emptyBlocklist }
         guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
         guard duration >= .brickMinimumSession else {
@@ -23,11 +23,22 @@ public enum SessionEngine {
         return Session(startedAt: now, plannedEnd: now.addingTimeInterval(duration))
     }
 
-    // MARK: Ending by tap
+    // MARK: Ending with the key
 
-    /// The brick can only end a session once the minimum duration has elapsed.
-    /// This is what turns a switch into a contract: returning to the object
-    /// early buys you nothing.
+    /// The gate: whichever key the user has, it only works once the minimum
+    /// duration has elapsed. This is what turns a switch into a contract, and
+    /// it is the rule that survives unchanged when the key is a face rather
+    /// than an object.
+    public static func validateEnd(state: BrickState, now: Date) throws -> Session {
+        guard let session = state.activeSession, session.isActive else {
+            throw BrickError.noActiveSession
+        }
+        let exitOpens = session.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
+        guard now >= exitOpens else { throw BrickError.tooEarlyToEnd(availableAt: exitOpens) }
+        return session
+    }
+
+    /// The brick path: the scanned tag has to be *the* brick, then the gate.
     public static func validateTapEnd(
         state: BrickState,
         scannedUID: String,
@@ -37,12 +48,7 @@ public enum SessionEngine {
         guard tag.uid.caseInsensitiveCompare(scannedUID) == .orderedSame else {
             throw BrickError.wrongTag(scanned: scannedUID)
         }
-        guard let session = state.activeSession, session.isActive else {
-            throw BrickError.noActiveSession
-        }
-        let exitOpens = session.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
-        guard now >= exitOpens else { throw BrickError.tooEarlyToEnd(availableAt: exitOpens) }
-        return session
+        return try validateEnd(state: state, now: now)
     }
 
     // MARK: Ending by emergency

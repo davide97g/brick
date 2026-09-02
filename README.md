@@ -52,12 +52,13 @@ is a separate grant that Apple makes only on request, so uploading a build is st
 
 | Piece | State |
 |---|---|
-| `BrickKit` — models, session rules, persistence | 36 tests passing, runs on any platform |
+| `BrickKit` — models, session rules, persistence | 54 tests passing, runs on any platform |
 | `Brick` — the SwiftUI app | Builds and runs in the Simulator; installs and launches on device |
 | `BrickMonitor` — clears the shield when time is up | Compiles, embedded, never observed running |
 | `BrickShield` — the blocked-app screen | Compiles, embedded, never observed running |
 | Screen Time on device (authorization, shield) | Not yet exercised |
 | NFC pairing and reads | Not started — no tag yet |
+| Face ID as a stand-in key | Built and tested; the prompt itself is unverified on device |
 | App Store archive | Clean; export blocked on Family Controls (Distribution) |
 | Store metadata, privacy policy | Drafted in `store/` |
 | Hardware | Not started |
@@ -72,6 +73,14 @@ is a separate grant that Apple makes only on request, so uploading a build is st
 6. **It ends by itself.** `BrickMonitor` clears everything at the planned end with the app not running. Notifications for the five-minute warning and the end are queued at *start*, so they arrive even if the app is killed.
 7. **Or you go back.** Tap the brick again — but only once the minimum duration has passed. Before that the app tells you the time remaining and nothing else.
 8. **Or you don't.** Three emergency unlocks per rolling seven days, behind a ten-second hold. The valve has to exist; it just shouldn't be something a thumb does by reflex.
+
+### If you have no brick yet
+
+An NFC tag you haven't bought is a wall, so setup offers Face ID instead: it starts and ends
+sessions in the same two taps. It is deliberately the weaker product and the app says so where
+you choose it — the key is in your hand rather than across the room, so all that stands between
+you and your apps is the minimum duration and three emergency unlocks a week. Pair a brick later
+and it takes the key back.
 
 ## The interface
 
@@ -98,6 +107,7 @@ Everything Apple-framework-shaped sits behind a port:
 | `SessionScheduling` | `DeviceActivityScheduler` | `PretendScheduler` |
 | `TagReading` | `CoreNFCTagReader` | `PretendTagReader` |
 | `TagWriting` | `CoreNFCTagWriter` | `PretendTagWriter` |
+| `BiometricAuthenticating` | `LocalAuthenticationBiometrics` | `PretendBiometrics` |
 | `Notifying` | `UserNotificationsNotifier` | same |
 | `Clock` | `SystemClock` | `TestClock` in tests |
 

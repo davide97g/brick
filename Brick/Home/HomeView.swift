@@ -131,7 +131,7 @@ struct HomeView: View {
                 gate: gate(of: session),
                 remaining: session.remaining(at: controller.now),
                 caption: "until \(Format.clockTime(session.plannedEnd))",
-                isOpen: controller.canEndByTap
+                isOpen: controller.canEndWithKey
             )
             .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
         }
@@ -139,39 +139,45 @@ struct HomeView: View {
 
     private var runningControls: some View {
         PaperCard {
-            Text(controller.state.tag?.whereItIs ?? "")
+            Text(controller.keyDescription)
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.ashOnPaper)
                 .multilineTextAlignment(.center)
 
             VStack(spacing: 10) {
                 Button {
-                    Task { await model.scan { try await controller.endSessionByTap() } }
+                    Task { await model.scan { try await controller.endSessionUsingKey() } }
                 } label: {
                     Text(endButtonTitle)
                 }
                 .buttonStyle(SolidPill())
-                .disabled(!controller.canEndByTap || model.scanning)
+                .disabled(!controller.canEndWithKey || model.scanning)
 
-                if !controller.canEndByTap, let opensAt = controller.tapExitOpensAt {
-                    Text("The brick opens at \(Format.clockTime(opensAt))")
+                if !controller.canEndWithKey, let opensAt = controller.keyExitOpensAt {
+                    Text(gateText(opensAt))
                         .engraved(Theme.ashOnPaper)
                 }
             }
 
             EmergencyUnlockButton(remainingAllowance: controller.emergencyRemaining) {
-                do {
-                    try controller.endSessionByEmergency()
-                } catch {
-                    model.present(error)
-                }
+                Task { await model.scan { try await controller.endSessionByEmergency() } }
             }
         }
     }
 
     private var endButtonTitle: String {
-        if model.scanning { return "Hold near your brick" }
-        return controller.canEndByTap ? "Tap your brick to end" : "Locked"
+        guard controller.canEndWithKey else { return "Locked" }
+        switch controller.unlockMethod {
+        case .brick:
+            return model.scanning ? "Hold near your brick" : "Tap your brick to end"
+        case .biometric:
+            return "End with \(controller.biometricName)"
+        }
+    }
+
+    private func gateText(_ opensAt: Date) -> String {
+        let subject = controller.unlockMethod == .brick ? "The brick" : controller.biometricName
+        return "\(subject) opens at \(Format.clockTime(opensAt))"
     }
 
     private func progress(of session: Session) -> Double {
@@ -234,6 +240,7 @@ struct HomeView: View {
         switch session.endReason {
         case .scheduled: return "ran out"
         case .tappedBrick: return "ended at the brick"
+        case .biometrics: return "ended with \(controller.biometricName)"
         case .emergency: return "emergency unlock"
         case .none: return ""
         }

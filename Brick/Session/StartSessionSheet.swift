@@ -68,12 +68,12 @@ struct StartSessionSheet: View {
                     Button {
                         Task {
                             await model.scan {
-                                try await controller.startSessionByTap(duration: .brickMinutes(minutes))
+                                try await controller.startSessionUsingKey(duration: .brickMinutes(minutes))
                             }
                             if controller.activeSession != nil { dismiss() }
                         }
                     } label: {
-                        Text(model.scanning ? "Hold near your brick" : "Tap your brick to start")
+                        Text(startButtonTitle)
                     }
                     .buttonStyle(SolidPill())
                     .disabled(model.scanning)
@@ -83,8 +83,18 @@ struct StartSessionSheet: View {
         .presentationDragIndicator(.visible)
     }
 
+    private var startButtonTitle: String {
+        switch controller.unlockMethod {
+        case .brick:
+            return model.scanning ? "Hold near your brick" : "Tap your brick to start"
+        case .biometric:
+            return "Start with \(controller.biometricName)"
+        }
+    }
+
     private var lockNotice: String {
         let locked = min(controller.state.blocklist.minimumDuration, .brickMinutes(minutes))
-        return "The brick won't end this for the first \(Format.duration(locked))."
+        let subject = controller.unlockMethod == .brick ? "The brick" : controller.biometricName
+        return "\(subject) won't end this for the first \(Format.duration(locked))."
     }
 }

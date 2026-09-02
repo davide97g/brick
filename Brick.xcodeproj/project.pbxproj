@@ -25,6 +25,7 @@
 		55CC96D0F5983E65E631C1FA /* BrickShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 523903C198F90E96FB1F3B0D /* BrickShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5B9003343BBBA2E5B5B3263F /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 93FCBE8981D780CE782E4452 /* BrickKit */; };
 		891D7874528A5D436F6054AB /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = D287EBC760C29BEA09CCFDDB /* BrickKit */; };
+		8B5A2EE0E5221AFED443F9CF /* LocalAuthenticationBiometrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A77C1AC5FC357DC782BDA4A /* LocalAuthenticationBiometrics.swift */; };
 		A90FF1160C4B1231F1F6F36D /* CoreNFCTagWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */; };
 		AB79BB1AF60BD992E133F9A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85AD41481B81CFEAF0DB6C6D /* Assets.xcassets */; };
 		BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81391C961605212FB6128E92 /* BrickKit */; };
@@ -82,6 +83,7 @@
 		314D801CEB699B3A5390680C /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		317A6A505487B087A65990B0 /* Authorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization.swift; sourceTree = "<group>"; };
 		37C7291BC807ED1813DD293D /* CoreNFCTagReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreNFCTagReader.swift; sourceTree = "<group>"; };
+		4A77C1AC5FC357DC782BDA4A /* LocalAuthenticationBiometrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAuthenticationBiometrics.swift; sourceTree = "<group>"; };
 		4C56EFDBCDF7146197422B0D /* SessionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRing.swift; sourceTree = "<group>"; };
 		507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationsNotifier.swift; sourceTree = "<group>"; };
 		523903C198F90E96FB1F3B0D /* BrickShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -202,6 +204,7 @@
 				B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */,
 				7D6DF3674DC5E09E6ACD87BC /* DemoTag.swift */,
 				E2D2E0D4EB667A0BD45C237F /* DeviceActivityScheduler.swift */,
+				4A77C1AC5FC357DC782BDA4A /* LocalAuthenticationBiometrics.swift */,
 				E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */,
 				C2D85103EC894FFF8642EA2C /* SimulatorAdapters.swift */,
 				507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */,
@@ -428,6 +431,7 @@
 				493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */,
 				42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */,
 				BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */,
+				8B5A2EE0E5221AFED443F9CF /* LocalAuthenticationBiometrics.swift in Sources */,
 				32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */,
 				E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */,
 				EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */,
@@ -580,6 +584,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Without a brick, Face ID is what starts and ends a session.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -663,6 +668,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Brick reads your brick's NFC tag to start and end a session.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Without a brick, Face ID is what starts and ends a session.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

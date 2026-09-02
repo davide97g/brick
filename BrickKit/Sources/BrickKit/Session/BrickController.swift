@@ -13,6 +13,7 @@ public final class BrickController {
     private let scheduler: SessionScheduling
     private let tagReader: TagReading
     private let tagWriter: TagWriting?
+    private let biometrics: BiometricAuthenticating
     private let notifier: Notifying
     private let clock: Clock
 
@@ -22,6 +23,7 @@ public final class BrickController {
         scheduler: SessionScheduling,
         tagReader: TagReading,
         tagWriter: TagWriting? = nil,
+        biometrics: BiometricAuthenticating = StubBiometrics(),
         notifier: Notifying = SilentNotifier(),
         clock: Clock = SystemClock()
     ) {
@@ -30,6 +32,7 @@ public final class BrickController {
         self.scheduler = scheduler
         self.tagReader = tagReader
         self.tagWriter = tagWriter
+        self.biometrics = biometrics
         self.notifier = notifier
         self.clock = clock
         self.state = store.load()
@@ -45,16 +48,40 @@ public final class BrickController {
         state.activeSession?.remaining(at: now) ?? 0
     }
 
-    public var canEndByTap: Bool {
+    /// Whether the key — brick or face — works yet.
+    public var canEndWithKey: Bool {
         guard let session = state.activeSession, session.isActive else { return false }
         return now >= session.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
     }
 
-    public var tapExitOpensAt: Date? {
+    public var keyExitOpensAt: Date? {
         state.activeSession?.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
     }
 
     public var emergencyRemaining: Int { state.emergency.remainingAllowance(at: now) }
+
+    public var unlockMethod: UnlockMethod { state.unlock }
+
+    /// Whether biometrics can be offered as a stand-in for a brick at all.
+    public var biometricsAvailable: Bool { biometrics.isAvailable }
+
+    /// "Face ID" / "Touch ID". Copy must name what the phone will actually show.
+    public var biometricName: String { biometrics.name }
+
+    /// Swapping the key mid-session would be a free unlock, and biometrics
+    /// that aren't enrolled can't be offered at all.
+    public var canSwitchKey: Bool {
+        activeSession?.isActive != true && biometrics.isAvailable
+    }
+
+    /// What the user has to reach for to get out. The shield says the same
+    /// thing, from the state file alone.
+    public var keyDescription: String {
+        switch state.unlock {
+        case .brick: return state.tag?.whereItIs ?? "Your brick has the way out."
+        case .biometric: return "No brick. \(biometrics.name) is the way out."
+        }
+    }
 
     // MARK: Lifecycle
 
@@ -113,7 +140,30 @@ public final class BrickController {
         }
         persist {
             $0.tag = BrickTag(uid: uid, ndefID: identity, placeNote: placeNote, pairedAt: self.now)
+            $0.unlock = .brick
         }
+    }
+
+    // MARK: Choosing the key
+
+    /// Switches to biometrics — the path for a user who has no brick yet.
+    ///
+    /// The prompt is run here rather than trusted later: a key that turns out
+    /// not to work is discovered now, not at the end of a four-hour session.
+    public func useBiometricUnlock() async throws {
+        guard state.activeSession?.isActive != true else { throw record(.sessionAlreadyActive) }
+        guard biometrics.isAvailable else { throw record(.biometricUnavailable) }
+        try await biometrics.authenticate(reason: "Use \(biometrics.name) to start and end sessions.")
+        persist { $0.unlock = .biometric }
+        lastError = nil
+    }
+
+    /// Switches back to the brick. The tag survives the detour, so a user who
+    /// tried biometrics and printed a brick later doesn't re-pair.
+    public func useBrickUnlock() throws {
+        guard state.activeSession?.isActive != true else { throw record(.sessionAlreadyActive) }
+        persist { $0.unlock = .brick }
+        lastError = nil
     }
 
     public func updatePlaceNote(_ note: String) {
@@ -152,6 +202,17 @@ public final class BrickController {
 
     // MARK: Sessions
 
+    /// Starting goes through whichever key is configured.
+    public func startSessionUsingKey(duration: TimeInterval) async throws {
+        switch state.unlock {
+        case .brick:
+            try await startSessionByTap(duration: duration)
+        case .biometric:
+            try await biometrics.authenticate(reason: "Start a session.")
+            try startSession(duration: duration)
+        }
+    }
+
     /// Starting requires the brick: you scan it, then you walk away from it.
     public func startSessionByTap(duration: TimeInterval) async throws {
         guard let tag = state.tag else { throw BrickError.notPaired }
@@ -183,6 +244,15 @@ public final class BrickController {
         lastError = nil
     }
 
+    public func endSessionUsingKey() async throws {
+        switch state.unlock {
+        case .brick:
+            try await endSessionByTap()
+        case .biometric:
+            try await endSessionByBiometrics()
+        }
+    }
+
     public func endSessionByTap() async throws {
         guard state.tag != nil else { throw record(.notPaired) }
         let uid = try await tagReader.readTagUID()
@@ -194,11 +264,39 @@ public final class BrickController {
         finish(reason: .tappedBrick)
     }
 
-    public func endSessionByEmergency() throws {
+    /// The gate is checked before the prompt, so a refusal costs nothing, and
+    /// again after it, because time passes while the sheet is up.
+    public func endSessionByBiometrics() async throws {
+        do {
+            _ = try SessionEngine.validateEnd(state: state, now: now)
+        } catch let error as BrickError {
+            throw record(error)
+        }
+        try await biometrics.authenticate(reason: "End this session.")
+        do {
+            _ = try SessionEngine.validateEnd(state: state, now: now)
+        } catch let error as BrickError {
+            throw record(error)
+        }
+        finish(reason: .biometrics)
+    }
+
+    /// Spending an emergency unlock still goes through the biometric prompt
+    /// when that is the key: the quota is what costs something, but a phone
+    /// left on a table shouldn't be able to spend it.
+    public func endSessionByEmergency() async throws {
         do {
             _ = try SessionEngine.validateEmergency(state: state, now: now)
         } catch let error as BrickError {
             throw record(error)
+        }
+        if state.unlock == .biometric {
+            try await biometrics.authenticate(reason: "Spend an emergency unlock.")
+            do {
+                _ = try SessionEngine.validateEmergency(state: state, now: now)
+            } catch let error as BrickError {
+                throw record(error)
+            }
         }
         finish(reason: .emergency)
     }

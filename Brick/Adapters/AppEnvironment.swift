@@ -28,6 +28,7 @@ enum AppEnvironment {
             scheduler: PretendScheduler(),
             tagReader: PretendTagReader(),
             tagWriter: PretendTagWriter(),
+            biometrics: PretendBiometrics(),
             notifier: UserNotificationsNotifier()
         )
         #else
@@ -46,6 +47,11 @@ enum AppEnvironment {
             tagWriter: SwitchingTagWriter(
                 primary: CoreNFCTagWriter(),
                 alternate: PretendTagWriter(),
+                useAlternate: { DemoTagAccess.isEnabledNow }
+            ),
+            biometrics: SwitchingBiometrics(
+                primary: LocalAuthenticationBiometrics(),
+                alternate: PretendBiometrics(),
                 useAlternate: { DemoTagAccess.isEnabledNow }
             ),
             notifier: UserNotificationsNotifier()

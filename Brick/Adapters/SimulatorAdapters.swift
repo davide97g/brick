@@ -48,3 +48,16 @@ final class PretendTagWriter: TagWriting, @unchecked Sendable {
         return PretendTagReader.uid
     }
 }
+
+/// Always passes, after a beat long enough to look like a prompt. Face ID does
+/// work in the Simulator, but only once enrolled by hand — the flow has to be
+/// exercisable without that, and App Review needs the same way through on a
+/// device with no enrolled face.
+final class PretendBiometrics: BiometricAuthenticating, @unchecked Sendable {
+    let isAvailable = true
+    let name = "Face ID"
+
+    func authenticate(reason: String) async throws {
+        try? await Task.sleep(for: .milliseconds(500))
+    }
+}

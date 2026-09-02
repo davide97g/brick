@@ -15,6 +15,7 @@ readable only by buriko and its two extensions:
 
 - the length and outcome of your sessions,
 - the identifier and UID of your paired brick, plus the note you wrote about where you leave it,
+- whether the brick or Face ID is your way in and out,
 - the encoded list of apps you chose to block, as an opaque blob supplied by Apple.
 
 None of it is transmitted anywhere. Deleting the app deletes the file, and with it every
@@ -42,6 +43,14 @@ your device when the session starts. Nothing is sent through Apple's push server
 
 buriko reads the factory UID of your tag to recognise your brick, and writes an identifier onto
 the tag when you pair it. No other tag data is read or retained.
+
+## Face ID
+
+If you have no brick, Face ID can start and end sessions instead. The app asks iOS to run the
+check and is told only whether it passed. No biometric data is read, stored or transmitted —
+that is a guarantee of the operating system, not of this app. Face ID is used as a deliberate
+gesture, never as a secret: it protects nothing, it only makes ending a session an act rather
+than a reflex.
 
 ## Children
 

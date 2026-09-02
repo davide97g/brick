@@ -5,6 +5,8 @@ public enum EndReason: String, Codable, Equatable, Sendable {
     case scheduled
     /// User returned to the brick and tapped it.
     case tappedBrick
+    /// No brick paired: user passed the biometric prompt after the gate opened.
+    case biometrics
     /// User spent one of their emergency unlocks.
     case emergency
 }

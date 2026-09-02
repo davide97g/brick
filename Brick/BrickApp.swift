@@ -51,7 +51,7 @@ final class AppModel {
 
     /// Screen Time access was revoked from Settings while a brick is paired.
     var authorizationLost: Bool {
-        !isAuthorized && controller.state.isPaired
+        !isAuthorized && controller.state.hasKey
     }
 
     /// Called on every foreground: re-reads authorization and repairs the
@@ -63,7 +63,7 @@ final class AppModel {
     }
 
     var needsSetup: Bool {
-        !isAuthorized || !controller.state.isPaired || controller.state.blocklist.isEmpty
+        !isAuthorized || !controller.state.hasKey || controller.state.blocklist.isEmpty
     }
 
     func requestAuthorization() async {
@@ -89,6 +89,9 @@ final class AppModel {
     }
 
     func present(_ error: Error) {
+        if case BrickError.biometricCancelled = error {
+            return  // User dismissed the Face ID sheet; not worth an alert.
+        }
         if let brickError = error as? BrickError {
             alert = AlertContent(brickError, now: controller.now)
         } else if case CoreNFCFailureLike.cancelled = CoreNFCFailureLike(error) {

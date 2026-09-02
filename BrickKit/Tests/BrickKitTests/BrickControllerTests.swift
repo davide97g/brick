@@ -8,12 +8,14 @@ private struct Harness {
     let shielding = RecordingShielding()
     let scheduler = RecordingScheduler()
     let tagReader = StubTagReader(uid: "04A1B2C3D4E580")
+    let biometrics = StubBiometrics()
     let notifier = RecordingNotifier()
     let clock = TestClock()
     let controller: BrickController
 
-    init(paired: Bool = true, withBlocklist: Bool = true) {
+    init(paired: Bool = true, withBlocklist: Bool = true, unlock: UnlockMethod = .brick) {
         var state = BrickState()
+        state.unlock = unlock
         if paired {
             state.tag = BrickTag(uid: "04A1B2C3D4E580", placeNote: "on your desk", pairedAt: clock.now)
         }
@@ -30,6 +32,7 @@ private struct Harness {
             shielding: shielding,
             scheduler: scheduler,
             tagReader: tagReader,
+            biometrics: biometrics,
             notifier: notifier,
             clock: clock
         )
@@ -107,7 +110,7 @@ struct BrickControllerTests {
         }
         #expect(h.shielding.isShielded)
         #expect(h.controller.activeSession != nil)
-        #expect(!h.controller.canEndByTap)
+        #expect(!h.controller.canEndWithKey)
     }
 
     @Test("tapping after the minimum duration clears everything")
@@ -115,7 +118,7 @@ struct BrickControllerTests {
         let h = Harness()
         try await h.controller.startSessionByTap(duration: .brickMinutes(90))
         h.clock.advance(by: .brickMinutes(30))
-        #expect(h.controller.canEndByTap)
+        #expect(h.controller.canEndWithKey)
         try await h.controller.endSessionByTap()
         #expect(!h.shielding.isShielded)
         #expect(h.scheduler.cancelCount == 1)
@@ -129,7 +132,7 @@ struct BrickControllerTests {
         try await h.controller.startSessionByTap(duration: .brickMinutes(90))
         h.clock.advance(by: .brickMinutes(5))
         #expect(h.controller.emergencyRemaining == 3)
-        try h.controller.endSessionByEmergency()
+        try await h.controller.endSessionByEmergency()
         #expect(!h.shielding.isShielded)
         #expect(h.controller.emergencyRemaining == 2)
         #expect(h.store.load().history.last?.endReason == .emergency)
@@ -232,5 +235,117 @@ struct BrickControllerTests {
             try h.controller.unpairBrick()
         }
         #expect(h.store.load().tag != nil)
+    }
+
+    // MARK: No brick: biometrics as the key
+
+    @Test("choosing biometrics needs one successful prompt, then it is the key")
+    func choosingBiometrics() async throws {
+        let h = Harness(paired: false)
+        #expect(!h.controller.state.hasKey)
+        try await h.controller.useBiometricUnlock()
+        #expect(h.controller.unlockMethod == .biometric)
+        #expect(h.controller.state.hasKey)
+        #expect(h.biometrics.prompts.count == 1)
+        #expect(h.store.load().unlock == .biometric)
+    }
+
+    @Test("a refused prompt leaves the brick as the key")
+    func refusedPromptDoesNotSwitch() async {
+        let h = Harness(paired: false)
+        h.biometrics.stub(.failure(BrickError.biometricFailed))
+        await #expect(throws: BrickError.biometricFailed) {
+            try await h.controller.useBiometricUnlock()
+        }
+        #expect(h.controller.unlockMethod == .brick)
+        #expect(!h.controller.state.hasKey)
+    }
+
+    @Test("biometrics are refused on a phone that has none enrolled")
+    func biometricsUnavailable() async {
+        let h = Harness(paired: false)
+        h.biometrics.stub(available: false)
+        await #expect(throws: BrickError.biometricUnavailable) {
+            try await h.controller.useBiometricUnlock()
+        }
+        #expect(h.controller.unlockMethod == .brick)
+    }
+
+    @Test("with no brick, a face starts a session and never touches the reader")
+    func biometricStart() async throws {
+        let h = Harness(paired: false, unlock: .biometric)
+        h.tagReader.stub(.failure(BrickError.notPaired))
+        try await h.controller.startSessionUsingKey(duration: .brickMinutes(60))
+        #expect(h.shielding.isShielded)
+        #expect(h.biometrics.prompts.count == 1)
+        #expect(h.store.load().activeSession != nil)
+    }
+
+    @Test("the gate holds for a face exactly as it does for the brick")
+    func biometricEndRespectsGate() async throws {
+        let h = Harness(paired: false, unlock: .biometric)
+        try await h.controller.startSessionUsingKey(duration: .brickMinutes(90))
+        h.clock.advance(by: .brickMinutes(10))
+        await #expect(throws: BrickError.self) {
+            try await h.controller.endSessionUsingKey()
+        }
+        #expect(h.shielding.isShielded)
+        // Refused before the prompt: only the start asked for a face.
+        #expect(h.biometrics.prompts.count == 1)
+
+        h.clock.advance(by: .brickMinutes(20))
+        try await h.controller.endSessionUsingKey()
+        #expect(!h.shielding.isShielded)
+        #expect(h.biometrics.prompts.count == 2)
+        #expect(h.store.load().history.last?.endReason == .biometrics)
+    }
+
+    @Test("a failed face leaves the session running")
+    func failedFaceKeepsSession() async throws {
+        let h = Harness(paired: false, unlock: .biometric)
+        try await h.controller.startSessionUsingKey(duration: .brickMinutes(60))
+        h.clock.advance(by: .brickMinutes(30))
+        h.biometrics.stub(.failure(BrickError.biometricFailed))
+        await #expect(throws: BrickError.biometricFailed) {
+            try await h.controller.endSessionUsingKey()
+        }
+        #expect(h.shielding.isShielded)
+        #expect(h.controller.activeSession != nil)
+    }
+
+    @Test("an emergency unlock without a brick still costs a face and an allowance")
+    func biometricEmergency() async throws {
+        let h = Harness(paired: false, unlock: .biometric)
+        try await h.controller.startSessionUsingKey(duration: .brickMinutes(90))
+        h.clock.advance(by: .brickMinutes(5))
+        h.biometrics.stub(.failure(BrickError.biometricCancelled))
+        await #expect(throws: BrickError.biometricCancelled) {
+            try await h.controller.endSessionByEmergency()
+        }
+        #expect(h.shielding.isShielded)
+        #expect(h.controller.emergencyRemaining == 3)
+
+        h.biometrics.stub(.success(()))
+        try await h.controller.endSessionByEmergency()
+        #expect(!h.shielding.isShielded)
+        #expect(h.controller.emergencyRemaining == 2)
+    }
+
+    @Test("pairing a brick later takes the key back from the face")
+    func pairingReclaimsTheKey() async throws {
+        let h = Harness(paired: false, unlock: .biometric)
+        try await h.controller.pairBrick()
+        #expect(h.controller.unlockMethod == .brick)
+        #expect(h.store.load().tag?.uid == "04A1B2C3D4E580")
+    }
+
+    @Test("the key cannot be swapped mid-session")
+    func cannotSwapKeyMidSession() async throws {
+        let h = Harness()
+        try await h.controller.startSessionByTap(duration: .brickMinutes(60))
+        await #expect(throws: BrickError.sessionAlreadyActive) {
+            try await h.controller.useBiometricUnlock()
+        }
+        #expect(h.controller.unlockMethod == .brick)
     }
 }
