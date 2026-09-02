@@ -10,7 +10,8 @@ An iOS app paired with one 3D-printed NFC brick. Tapping the brick starts a sess
 
 These are confirmed by experiment, not assumed. Don't re-litigate them.
 
-- **Family Controls and NFC Tag Reading cannot be signed by a free personal Apple team.** A paid membership is required for any device build. `spikes/SpikeAShield/` is the probe that proved it.
+- **Family Controls and NFC Tag Reading cannot be signed by a free personal Apple team.** `spikes/SpikeAShield/` is the probe that proved it. The membership is now paid, so device builds sign; profiles carry both capabilities and last a year.
+- **Family Controls for *distribution* is a separate grant.** Apple gives it per App ID on request, and `xcodebuild -exportArchive` fails without it. Development is unaffected. See `store/SUBMISSION.md`.
 - **The Screen Time APIs do not work in the Simulator.** Family Controls authorization always fails there. That's why every Apple-framework dependency sits behind a port with a Simulator stand-in.
 - **`DeviceActivitySchedule` refuses intervals shorter than 15 minutes.** `TimeInterval.brickMinimumSession` encodes this; the UI must never offer less.
 - **A shield cannot open the host app.** `ShieldActionResponse` is `.close` / `.defer` / `.none` only. Any design that needs "tap the shield to unlock" is dead on arrival.
@@ -54,7 +55,9 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 - **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (app target) is the only encoder/decoder. `BlocklistConfig` caches the counts so the UI can describe a selection without decoding it.
 - **Screen Time access can be revoked from Settings mid-session**, silently invalidating tokens. `reapplyShieldIfNeeded()` repairs it on foreground and reports failure; the UI shows a banner rather than letting the countdown lie.
 - **Extension code runs out of process under tight time and memory limits.** Keep `BrickMonitor` trivial.
+- **Store submission state lives in `store/`.** `SUBMISSION.md` is the running record of what is done, blocked and unverified; `METADATA.md` holds the listing copy and review notes. Update them when any of it changes.
 - **Don't put persistent chrome inside a paged `TabView`.** A `PaperCard` placed in each page slides a second copy of itself into view on every swipe, and its bottom safe-area inset doesn't resolve, so it renders cropped. Keep the card and the dots outside the `TabView`; only content pages swipe.
+- **App Review has no brick.** `DemoTagAccess` + `SwitchingTagReader`/`SwitchingTagWriter` swap in the pretend tag on device when the code in `store/METADATA.md` is entered under Settings → App Review. It must stay visible in the UI while on: an app that silently stopped needing the object would be lying about what it is.
 - **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview onboard<N>` exists so all four can be.
 
 ## Tests

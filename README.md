@@ -34,24 +34,32 @@ What this does differently: sessions have real duration policy, the shield scree
 
 ## Status
 
-Core built and tested. **Nothing real runs yet.**
+Core built and tested. Membership is paid, the app builds and launches on a device, and an App
+Store archive is clean — but **nothing real has been observed running yet**, and there is no NFC
+tag to pair.
 
-Both capabilities this product requires — Family Controls and NFC Tag Reading — are unavailable to free personal Apple developer teams. This is confirmed, not assumed:
+Both capabilities this product requires — Family Controls and NFC Tag Reading — are unavailable
+to free personal Apple developer teams. That was the wall this project sat behind:
 
 ```
 Personal development teams, including "Davide Ghiotto", do not support
 the Family Controls (Development) capability.
 ```
 
-A paid Apple Developer Program membership is required to run any of this on a device. Until then everything runs in the Simulator against pretend adapters, which exercises the full flow — pairing, sessions, refusals, expiry, emergency unlocks — without blocking anything for real.
+That is now paid for. Development profiles carry both capabilities and last a year. Distribution
+is a separate grant that Apple makes only on request, so uploading a build is still blocked —
+`store/SUBMISSION.md` has the exact error and what it needs.
 
 | Piece | State |
 |---|---|
 | `BrickKit` — models, session rules, persistence | 36 tests passing, runs on any platform |
-| `Brick` — the SwiftUI app | Builds and runs in the Simulator |
+| `Brick` — the SwiftUI app | Builds and runs in the Simulator; installs and launches on device |
 | `BrickMonitor` — clears the shield when time is up | Compiles, embedded, never observed running |
 | `BrickShield` — the blocked-app screen | Compiles, embedded, never observed running |
-| Device verification (spikes A/B/C) | Blocked on membership |
+| Screen Time on device (authorization, shield) | Not yet exercised |
+| NFC pairing and reads | Not started — no tag yet |
+| App Store archive | Clean; export blocked on Family Controls (Distribution) |
+| Store metadata, privacy policy | Drafted in `store/` |
 | Hardware | Not started |
 
 ## How a session works
@@ -152,11 +160,15 @@ One thing no iOS app can fix, said plainly rather than buried: **deleting the ap
 
 ## Roadmap
 
-Next, in order, all gated on the paid membership:
+Next, in order:
 
-1. Run the two extensions for real and watch a shield clear itself with the app killed
-2. Spike the three risks on device: shields surviving reboot, NTAG215 reads through printed PLA, `DeviceActivityMonitor` firing when the app is dead
-3. Print the first brick and measure read reliability through the shell
+1. Request Family Controls (Distribution) for all three App IDs — the one thing standing between
+   a clean archive and an upload (`store/SUBMISSION.md`)
+2. Buy NTAG215 tags, pair one, and watch a shield go up and clear itself for real
+3. Spike the three risks on device: shields surviving reboot, tag reads through printed PLA,
+   `DeviceActivityMonitor` firing when the app is dead
+4. Decide how a reviewer with no tag is meant to review this
+5. Print the first brick and measure read reliability through the shell
 
 Deliberately not planned: streaks, points, scores, or anything that makes the phone matter more. The product's value is not caring about it.
 
