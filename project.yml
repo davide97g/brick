@@ -12,7 +12,7 @@ settings:
     # One place for the version: the app and both extensions must ship the same
     # pair or App Store Connect rejects the bundle (ITMS-90473).
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    CURRENT_PROJECT_VERSION: "2"
 packages:
   BrickKit:
     path: BrickKit
@@ -54,6 +54,7 @@ targets:
     info:
       path: BrickMonitor/Info.plist
       properties:
+        CFBundleDisplayName: Brick Monitor
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
@@ -74,6 +75,7 @@ targets:
     info:
       path: BrickShield/Info.plist
       properties:
+        CFBundleDisplayName: Brick Shield
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:

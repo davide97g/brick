@@ -42,6 +42,21 @@ xcodebuild -exportArchive -archivePath build/Brick.xcarchive \
 `com.apple.developer.family-controls`, the app's also carries the NFC reader formats, and they
 expire 2 September 2027.
 
+### Two upload rejections, both fixed
+
+The first upload attempt was rejected by App Store Connect's validator — not by review:
+
+- `90360`: `CFBundleDisplayName` is required in each extension bundle. `project.yml` now declares
+  it for both ("Brick Monitor", "Brick Shield"); never hand-write the extension plists, xcodegen
+  overwrites them.
+- `90778`: with the iOS 26 SDK, `NDEF` is disallowed in
+  `com.apple.developer.nfc.readersession.formats`. The entitlement now lists `TAG` only. Nothing
+  is lost: both adapters use `NFCTagReaderSession`, and the pairing write goes through
+  `NFCMiFareTag.writeNDEF`, which the `TAG` format covers. There is no `NFCNDEFReaderSession`
+  anywhere in the app.
+
+`CURRENT_PROJECT_VERSION` was bumped to 2 at the same time, since a build number can't be reused.
+
 ### Uploading
 
 The build can go up as soon as the App Store Connect record exists (Transporter rejects a build
