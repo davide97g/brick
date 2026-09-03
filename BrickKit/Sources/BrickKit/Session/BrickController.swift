@@ -48,14 +48,46 @@ public final class BrickController {
         state.activeSession?.remaining(at: now) ?? 0
     }
 
+    /// The rules in force: the running session's profile, or the one a bare
+    /// start would use.
+    public var activeProfile: BlockProfile {
+        guard let session = state.activeSession else {
+            return state.profiles.first ?? BlockProfile()
+        }
+        return SessionEngine.profile(for: session, in: state)
+    }
+
     /// Whether the key — brick or face — works yet.
     public var canEndWithKey: Bool {
         guard let session = state.activeSession, session.isActive else { return false }
-        return now >= session.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
+        return now >= session.earliestTapExit(minimumDuration: activeProfile.minimumDuration)
     }
 
     public var keyExitOpensAt: Date? {
-        state.activeSession?.earliestTapExit(minimumDuration: state.blocklist.minimumDuration)
+        state.activeSession?.earliestTapExit(minimumDuration: activeProfile.minimumDuration)
+    }
+
+    /// The walk still owed before this session can end early.
+    public var exitRoute: [BrickTag] {
+        guard let session = state.activeSession else { return [] }
+        return SessionEngine.exitRoute(for: session, in: state)
+            .compactMap { state.tag(withUID: $0) }
+    }
+
+    public var routeStepsWalked: Int {
+        guard let session = state.activeSession,
+              let progress = state.routeProgress,
+              progress.sessionID == session.id,
+              !progress.isStale(window: activeProfile.routeWindow, at: now)
+        else { return 0 }
+        return progress.stepsDone
+    }
+
+    /// Where to go next. `nil` when nothing is running.
+    public var nextRouteTag: BrickTag? {
+        let route = exitRoute
+        guard !route.isEmpty else { return nil }
+        return route[min(routeStepsWalked, route.count - 1)]
     }
 
     public var emergencyRemaining: Int { state.emergency.remainingAllowance(at: now) }
@@ -78,7 +110,8 @@ public final class BrickController {
     /// thing, from the state file alone.
     public var keyDescription: String {
         switch state.unlock {
-        case .brick: return state.tag?.whereItIs ?? "Your brick has the way out."
+        case .brick: return nextRouteTag?.whereItIs ?? state.tag?.whereItIs
+            ?? "Your brick has the way out."
         case .biometric: return "No brick. \(biometrics.name) is the way out."
         }
     }
@@ -113,7 +146,7 @@ public final class BrickController {
     public func reapplyShieldIfNeeded() -> Bool {
         guard let session = state.activeSession, session.isActive else { return true }
         do {
-            try shielding.apply(selectionData: state.blocklist.selectionData)
+            try shielding.apply(selectionData: SessionEngine.profile(for: session, in: state).selectionData)
             return true
         } catch {
             return false
@@ -125,21 +158,45 @@ public final class BrickController {
     /// Writes an identity onto the tag when a writer is available, and falls
     /// back to a plain read otherwise — a tag that is already locked, or a
     /// build without write support, still pairs on its UID.
-    public func pairBrick(placeNote: String = "") async throws {
-        guard state.tag == nil else { throw BrickError.alreadyPaired }
+    public func pairBrick(name: String = "", placeNote: String = "", profileID: UUID? = nil) async throws {
         let identity = UUID()
         let uid: String
+        var wroteIdentity = false
         if let tagWriter {
             do {
                 uid = try await tagWriter.writeIdentity(identity)
+                wroteIdentity = true
             } catch {
                 uid = try await tagReader.readTagUID()
             }
         } else {
             uid = try await tagReader.readTagUID()
         }
+        guard state.tag(withUID: uid) == nil else {
+            // If the write went through, the tag physically carries the new
+            // identity now, so record it before refusing rather than leaving
+            // the stored ndefID describing a tag that no longer matches.
+            if wroteIdentity {
+                persist { state in
+                    guard let index = state.tags.firstIndex(where: {
+                        $0.uid.caseInsensitiveCompare(uid) == .orderedSame
+                    }) else { return }
+                    state.tags[index].ndefID = identity
+                }
+            }
+            throw record(.alreadyPaired)
+        }
         persist {
-            $0.tag = BrickTag(uid: uid, ndefID: identity, placeNote: placeNote, pairedAt: self.now)
+            $0.tags.append(
+                BrickTag(
+                    uid: uid,
+                    ndefID: identity,
+                    name: name,
+                    placeNote: placeNote,
+                    profileID: profileID ?? $0.profiles.first?.id,
+                    pairedAt: self.now
+                )
+            )
             $0.unlock = .brick
         }
     }
@@ -170,11 +227,79 @@ public final class BrickController {
         persist { $0.tag?.placeNote = note }
     }
 
+    public func updateTag(uid: String, name: String? = nil, placeNote: String? = nil, profileID: UUID?? = nil) {
+        persist { state in
+            guard let index = state.tags.firstIndex(where: {
+                $0.uid.caseInsensitiveCompare(uid) == .orderedSame
+            }) else { return }
+            if let name { state.tags[index].name = name }
+            if let placeNote { state.tags[index].placeNote = placeNote }
+            if let profileID { state.tags[index].profileID = profileID }
+        }
+    }
+
     /// Only allowed while nothing is running — otherwise unpairing would be a
     /// free unlock.
     public func unpairBrick() throws {
         guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
-        persist { $0.tag = nil }
+        persist { $0.tags.removeAll() }
+    }
+
+    /// Drops one station. Its steps leave every exit route with it, so no
+    /// profile is left pointing at a tag that no longer exists.
+    public func unpairTag(uid: String) throws {
+        guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
+        persist { state in
+            state.tags.removeAll { $0.uid.caseInsensitiveCompare(uid) == .orderedSame }
+            for index in state.profiles.indices {
+                state.profiles[index].exitRoute.removeAll {
+                    $0.caseInsensitiveCompare(uid) == .orderedSame
+                }
+            }
+        }
+    }
+
+    // MARK: Profiles
+
+    @discardableResult
+    public func addProfile(_ profile: BlockProfile) -> BlockProfile {
+        persist { $0.profiles.append(profile) }
+        return profile
+    }
+
+    public func updateProfile(_ profile: BlockProfile) {
+        persist { state in
+            guard let index = state.profiles.firstIndex(where: { $0.id == profile.id }) else { return }
+            state.profiles[index] = profile
+        }
+    }
+
+    /// Refused while its own session runs: the rules a session started under
+    /// are the rules it ends under.
+    public func removeProfile(id: UUID) throws {
+        if let session = state.activeSession, session.isActive,
+           SessionEngine.profile(for: session, in: state).id == id {
+            throw record(.sessionAlreadyActive)
+        }
+        persist { state in
+            state.profiles.removeAll { $0.id == id }
+            for index in state.tags.indices where state.tags[index].profileID == id {
+                state.tags[index].profileID = state.profiles.first?.id
+            }
+        }
+    }
+
+    /// The route is stored as UIDs, in order. An empty route means the tag
+    /// that started the session — the one-brick product.
+    public func setExitRoute(_ uids: [String], forProfile id: UUID) throws {
+        if let session = state.activeSession, session.isActive,
+           SessionEngine.profile(for: session, in: state).id == id {
+            throw record(.sessionAlreadyActive)
+        }
+        persist { state in
+            guard let index = state.profiles.firstIndex(where: { $0.id == id }) else { return }
+            state.profiles[index].exitRoute = uids
+        }
     }
 
     // MARK: Blocklist
@@ -214,13 +339,19 @@ public final class BrickController {
     }
 
     /// Starting requires the brick: you scan it, then you walk away from it.
+    /// Which brick decides which profile — that is what a station is.
     public func startSessionByTap(duration: TimeInterval) async throws {
-        guard let tag = state.tag else { throw BrickError.notPaired }
+        guard !state.tags.isEmpty else { throw record(.notPaired) }
         let uid = try await tagReader.readTagUID()
-        guard tag.uid.caseInsensitiveCompare(uid) == .orderedSame else {
-            throw record(BrickError.wrongTag(scanned: uid))
+        let session: Session
+        do {
+            session = try SessionEngine.validateStartByTap(
+                state: state, scannedUID: uid, duration: duration, now: now
+            )
+        } catch let error as BrickError {
+            throw record(error)
         }
-        try startSession(duration: duration)
+        try begin(session)
     }
 
     public func startSession(duration: TimeInterval) throws {
@@ -230,7 +361,12 @@ public final class BrickController {
         } catch let error as BrickError {
             throw record(error)
         }
-        try shielding.apply(selectionData: state.blocklist.selectionData)
+        try begin(session)
+    }
+
+    private func begin(_ session: Session) throws {
+        let profile = SessionEngine.profile(for: session, in: state)
+        try shielding.apply(selectionData: profile.selectionData)
         do {
             try scheduler.scheduleEnd(of: session)
         } catch {
@@ -240,7 +376,10 @@ public final class BrickController {
             throw error
         }
         notifier.scheduleSessionNotifications(for: session)
-        persist { $0.activeSession = session }
+        persist {
+            $0.activeSession = session
+            $0.routeProgress = nil
+        }
         lastError = nil
     }
 
@@ -253,15 +392,30 @@ public final class BrickController {
         }
     }
 
-    public func endSessionByTap() async throws {
-        guard state.tag != nil else { throw record(.notPaired) }
+    /// One tap of the exit route. A profile with no route is a route of one,
+    /// so this is also the plain "tap the brick" path.
+    ///
+    /// - Returns: the outcome, so the UI can say how much of the walk is left.
+    @discardableResult
+    public func endSessionByTap() async throws -> RouteOutcome {
+        guard !state.tags.isEmpty else { throw record(.notPaired) }
         let uid = try await tagReader.readTagUID()
+        let outcome: RouteOutcome
         do {
-            _ = try SessionEngine.validateTapEnd(state: state, scannedUID: uid, now: now)
+            outcome = try SessionEngine.validateRouteTap(state: state, scannedUID: uid, now: now)
         } catch let error as BrickError {
             throw record(error)
         }
-        finish(reason: .tappedBrick)
+        persist { SessionEngine.apply(outcome, to: &$0) }
+        switch outcome {
+        case .completed:
+            finish(reason: .tappedBrick)
+        case .advanced:
+            lastError = nil
+        case .wrongTag(let scanned, _):
+            throw record(.wrongTag(scanned: scanned))
+        }
+        return outcome
     }
 
     /// The gate is checked before the prompt, so a refusal costs nothing, and
