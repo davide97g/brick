@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
-    @State private var placeNote = ""
     @State private var reviewCode = ""
 
     private var controller: BrickController { model.controller }
@@ -12,9 +11,23 @@ struct SettingsView: View {
         List {
             Section {
                 NavigationLink {
-                    BlocklistView()
+                    SetupsView()
                 } label: {
-                    Text("What it blocks").foregroundStyle(Theme.chalk)
+                    LabeledContent {
+                        Text(setupsDetail).foregroundStyle(Theme.ash)
+                    } label: {
+                        Text("Setups").foregroundStyle(Theme.chalk)
+                    }
+                }
+
+                NavigationLink {
+                    BricksView()
+                } label: {
+                    LabeledContent {
+                        Text(bricksDetail).foregroundStyle(Theme.ash)
+                    } label: {
+                        Text("Bricks").foregroundStyle(Theme.chalk)
+                    }
                 }
 
                 LabeledContent {
@@ -24,28 +37,8 @@ struct SettingsView: View {
                     Text("Way in and out").foregroundStyle(Theme.chalk)
                 }
 
-                if let tag = controller.state.tag {
-                    LabeledContent {
-                        Text(String(tag.uid.suffix(6)))
-                            .monospaced()
-                            .foregroundStyle(Theme.ash)
-                    } label: {
-                        Text("Tag").foregroundStyle(Theme.chalk)
-                    }
-
-                    LabeledContent {
-                        Text(Format.day(tag.pairedAt)).foregroundStyle(Theme.ash)
-                    } label: {
-                        Text("Paired").foregroundStyle(Theme.chalk)
-                    }
-
-                    // Only meaningful when there is an object to be somewhere.
-                    TextField("Where you keep it", text: $placeNote, prompt: Text("on your desk"))
-                        .foregroundStyle(Theme.chalk)
-                        .onSubmit { controller.updatePlaceNote(placeNote) }
-                }
             } header: {
-                InkSectionHeader(text: controller.state.isPaired ? "Your brick" : "Your setup")
+                InkSectionHeader(text: sectionTitle)
             }
 
             Section {
@@ -64,25 +57,6 @@ struct SettingsView: View {
                 }
             } footer: {
                 Text(keyFooter).foregroundStyle(Theme.ash)
-            }
-
-            if controller.state.isPaired {
-                Section {
-                    Button("Unpair brick") {
-                        do {
-                            try controller.unpairBrick()
-                        } catch {
-                            model.present(error)
-                        }
-                    }
-                    .foregroundStyle(controller.activeSession != nil ? Theme.graphite : Theme.oxide)
-                    .disabled(controller.activeSession != nil)
-                } footer: {
-                    Text(controller.activeSession != nil
-                         ? "You can't unpair while a session is running."
-                         : "Pairing a different brick starts from scratch.")
-                        .foregroundStyle(Theme.ash)
-                }
             }
 
             if !controller.state.history.isEmpty {
@@ -141,9 +115,40 @@ struct SettingsView: View {
             }
         }
         .inkList("Settings")
-        .navigationDestination(isPresented: blocklistPreviewBinding) { BlocklistView() }
-        .task { placeNote = controller.state.tag?.placeNote ?? "" }
-        .onChange(of: placeNote) { _, newValue in controller.updatePlaceNote(newValue) }
+        .navigationDestination(isPresented: blocklistPreviewBinding) {
+            SetupDetailView(setupID: controller.defaultProfile().id)
+        }
+        .navigationDestination(isPresented: bricksPreviewBinding) { BricksView() }
+        .navigationDestination(isPresented: preview("setups")) { SetupsView() }
+        .navigationDestination(isPresented: preview("brick")) {
+            if let first = controller.state.tags.first {
+                BrickDetailView(uid: first.uid)
+            }
+        }
+    }
+
+    private var sectionTitle: String {
+        switch controller.state.tags.count {
+        case 0: return "Your setup"
+        case 1: return "Your brick"
+        default: return "Your bricks"
+        }
+    }
+
+    private var setupsDetail: String {
+        let count = controller.state.profiles.count
+        return count == 1
+            ? (controller.state.profiles[0].name.isEmpty ? "1" : controller.state.profiles[0].name)
+            : "\(count)"
+    }
+
+    private var bricksDetail: String {
+        let count = controller.state.tags.count
+        switch count {
+        case 0: return "None paired"
+        case 1: return controller.state.tags[0].displayName
+        default: return "\(count)"
+        }
     }
 
     /// Switching back means having a brick again: pair one if there is none.
@@ -175,6 +180,20 @@ struct SettingsView: View {
     private var blocklistPreviewBinding: Binding<Bool> {
         #if DEBUG
         Binding(get: { model.uiPreview == "blocklist" }, set: { _ in })
+        #else
+        .constant(false)
+        #endif
+    }
+
+    /// Screenshot hook: `-uiPreview bricks`.
+    private var bricksPreviewBinding: Binding<Bool> { preview("bricks") }
+
+    /// Every screen behind a tap needs its own hook, because a screenshot pass
+    /// that only ever captures the first page is how the onboarding card bug
+    /// survived one.
+    private func preview(_ name: String) -> Binding<Bool> {
+        #if DEBUG
+        Binding(get: { model.uiPreview == name }, set: { _ in })
         #else
         .constant(false)
         #endif

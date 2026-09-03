@@ -261,6 +261,16 @@ public final class BrickController {
 
     // MARK: Profiles
 
+    /// A fresh install has no setups and every screen needs one to point at,
+    /// so the first launch makes it rather than every caller checking.
+    @discardableResult
+    public func defaultProfile() -> BlockProfile {
+        if let first = state.profiles.first { return first }
+        let profile = BlockProfile()
+        persist { $0.profiles.append(profile) }
+        return profile
+    }
+
     @discardableResult
     public func addProfile(_ profile: BlockProfile) -> BlockProfile {
         persist { $0.profiles.append(profile) }
@@ -327,14 +337,16 @@ public final class BrickController {
 
     // MARK: Sessions
 
-    /// Starting goes through whichever key is configured.
-    public func startSessionUsingKey(duration: TimeInterval) async throws {
+    /// Starting goes through whichever key is configured. With a brick the
+    /// tag decides the profile, so `profileID` is only consulted on the
+    /// biometric path, where there is no object to ask.
+    public func startSessionUsingKey(duration: TimeInterval, profileID: UUID? = nil) async throws {
         switch state.unlock {
         case .brick:
             try await startSessionByTap(duration: duration)
         case .biometric:
             try await biometrics.authenticate(reason: "Start a session.")
-            try startSession(duration: duration)
+            try startSession(duration: duration, profileID: profileID)
         }
     }
 
@@ -354,10 +366,15 @@ public final class BrickController {
         try begin(session)
     }
 
-    public func startSession(duration: TimeInterval) throws {
+    public func startSession(duration: TimeInterval, profileID: UUID? = nil) throws {
+        guard let profile = state.profile(id: profileID) ?? state.profiles.first else {
+            throw record(.emptyBlocklist)
+        }
         let session: Session
         do {
-            session = try SessionEngine.validateStart(state: state, duration: duration, now: now)
+            session = try SessionEngine.validateStart(
+                state: state, profile: profile, startedByTag: nil, duration: duration, now: now
+            )
         } catch let error as BrickError {
             throw record(error)
         }

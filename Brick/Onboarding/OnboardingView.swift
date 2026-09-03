@@ -202,7 +202,9 @@ struct OnboardingView: View {
                             done: !controller.state.blocklist.isEmpty,
                             enabled: controller.state.hasKey
                         ) {
-                            NavigationLink("Choose") { BlocklistView() }
+                            NavigationLink("Choose") {
+                                SetupDetailView(setupID: controller.defaultProfile().id)
+                            }
                         }
                     }
                     .padding(.horizontal, 30)

@@ -49,7 +49,7 @@ struct HomeView: View {
             #endif
         }
         .sheet(isPresented: $startSheetShown) {
-            StartSessionSheet(defaultDuration: controller.state.blocklist.defaultDuration)
+            StartSessionSheet(defaultDuration: controller.activeProfile.defaultDuration)
                 .environment(model)
         }
         .onReceive(ticker) { now in
@@ -63,7 +63,9 @@ struct HomeView: View {
     private var settingsPreviewBinding: Binding<Bool> {
         #if DEBUG
         // "blocklist" lives one push deeper, so Settings has to open first.
-        Binding(get: { model.uiPreview == "settings" || model.uiPreview == "blocklist" }, set: { _ in })
+        Binding(get: {
+            ["settings", "blocklist", "bricks", "setups", "brick"].contains(model.uiPreview ?? "")
+        }, set: { _ in })
         #else
         .constant(false)
         #endif
@@ -187,7 +189,7 @@ struct HomeView: View {
 
     /// Where on the bezel the brick starts working.
     private func gate(of session: Session) -> Double? {
-        let minimum = controller.state.blocklist.minimumDuration
+        let minimum = controller.activeProfile.minimumDuration
         guard minimum > 0, session.plannedDuration > 0 else { return nil }
         let fraction = minimum / session.plannedDuration
         return fraction < 1 ? fraction : nil
@@ -203,7 +205,7 @@ struct HomeView: View {
                 Text("Ready")
                     .readout(size: 40)
                     .foregroundStyle(Theme.chalk)
-                Text(controller.state.blocklist.summary)
+                Text(controller.activeProfile.summary)
                     .engraved()
             }
         }

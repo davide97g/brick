@@ -25,7 +25,8 @@ final class AppModel {
     var scanning = false
 
     #if DEBUG
-    /// Screenshot hook: `-uiPreview start|settings|blocklist` opens that screen
+    /// Screenshot hook: `-uiPreview start|settings|setups|blocklist|bricks|brick`
+    /// opens that screen
     /// at launch, so screens behind a tap can be captured from the CLI.
     let uiPreview: String? = {
         let arguments = ProcessInfo.processInfo.arguments
@@ -47,6 +48,8 @@ final class AppModel {
         self.controller = controller ?? AppEnvironment.makeController()
         self.authorization = authorization
         self.isAuthorized = authorization.isAuthorized
+        // Every screen points at a setup; a fresh install has none.
+        self.controller.defaultProfile()
     }
 
     /// Screen Time access was revoked from Settings while a brick is paired.
@@ -63,7 +66,7 @@ final class AppModel {
     }
 
     var needsSetup: Bool {
-        !isAuthorized || !controller.state.hasKey || controller.state.blocklist.isEmpty
+        !isAuthorized || !controller.state.hasKey || controller.state.profiles.allSatisfy(\.isEmpty)
     }
 
     /// Runs for the life of the scene: the first status a cold start reports is

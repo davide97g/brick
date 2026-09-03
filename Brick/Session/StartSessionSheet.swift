@@ -6,6 +6,7 @@ struct StartSessionSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var minutes: Double
+    @State private var setupID: UUID?
 
     private let options: [Double] = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480]
 
@@ -14,6 +15,10 @@ struct StartSessionSheet: View {
     }
 
     private var controller: BrickController { model.controller }
+
+    private var setup: BlockProfile {
+        controller.state.profile(id: setupID) ?? controller.state.profiles.first ?? BlockProfile()
+    }
 
     var body: some View {
         ZStack {
@@ -58,7 +63,9 @@ struct StartSessionSheet: View {
                 Spacer(minLength: 0)
 
                 PaperCard {
-                    if controller.state.blocklist.minimumDuration > 0 {
+                    if controller.state.profiles.count > 1 { setupControl }
+
+                    if setup.minimumDuration > 0 {
                         Text(lockNotice)
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.ashOnPaper)
@@ -68,7 +75,10 @@ struct StartSessionSheet: View {
                     Button {
                         Task {
                             await model.scan {
-                                try await controller.startSessionUsingKey(duration: .brickMinutes(minutes))
+                                try await controller.startSessionUsingKey(
+                                    duration: .brickMinutes(minutes),
+                                    profileID: setupID
+                                )
                             }
                             if controller.activeSession != nil { dismiss() }
                         }
@@ -81,6 +91,45 @@ struct StartSessionSheet: View {
             }
         }
         .presentationDragIndicator(.visible)
+        .task {
+            setupID = controller.state.profiles.first?.id
+        }
+    }
+
+    /// With a brick there is nothing to choose here: the tag decides, which is
+    /// the whole point of having more than one.
+    @ViewBuilder
+    private var setupControl: some View {
+        switch controller.unlockMethod {
+        case .brick:
+            Text("The brick you tap decides which setup starts.")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.ashOnPaper)
+                .multilineTextAlignment(.center)
+        case .biometric:
+            Picker(selection: setupBinding) {
+                ForEach(controller.state.profiles) { option in
+                    Text(option.name.isEmpty ? "Untitled" : option.name).tag(Optional(option.id))
+                }
+            } label: {
+                Text("Setup")
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    private var setupBinding: Binding<UUID?> {
+        Binding(
+            get: { setupID },
+            set: { newValue in
+                setupID = newValue
+                // Each setup carries its own default length; switching should
+                // bring it with it rather than keep the last one's.
+                if let chosen = controller.state.profile(id: newValue) {
+                    minutes = max(15, (chosen.defaultDuration / 60).rounded())
+                }
+            }
+        )
     }
 
     private var startButtonTitle: String {
@@ -93,7 +142,7 @@ struct StartSessionSheet: View {
     }
 
     private var lockNotice: String {
-        let locked = min(controller.state.blocklist.minimumDuration, .brickMinutes(minutes))
+        let locked = min(setup.minimumDuration, .brickMinutes(minutes))
         let subject = controller.unlockMethod == .brick ? "The brick" : controller.biometricName
         return "\(subject) won't end this for the first \(Format.duration(locked))."
     }
