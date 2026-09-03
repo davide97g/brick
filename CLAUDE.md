@@ -90,6 +90,13 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
   the pretend prompt on device when the code in `store/METADATA.md` is entered under
   Settings → App Review. It must stay visible in the UI while on: an app that silently stopped needing the object would be lying about what it is.
 - **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview` covers the screens behind a tap: `start`, `settings`, `setups`, `blocklist` (the first setup), `route`, `bricks`, `brick`, `onboard<N>`.
+- **Type scales: use `brickText(_:weight:relativeTo:)`, never `.font(.system(size:))`.** A raw
+  system size ignores the reader's text-size setting for ever. Chrome that must not grow past a
+  point (the home header, the big readouts) clamps with `dynamicTypeSize(...)`; layouts that
+  would overflow at accessibility sizes scroll (`CenteredScroll`) or restack. Verify with
+  `xcrun simctl ui <device> content_size accessibility-extra-extra-extra-large`.
+- **Shapes are greedy.** A bare `Capsule()` or a `GeometryReader` inside a control takes all the
+  height it is offered. Size a control by its label and put the shapes in `.background`.
 - **Reverse mode inverts the two zones rather than adding a colour.** `Surface.standard` / `Surface.reversed` in `Theme.swift`; the root's `preferredColorScheme` follows, or the status bar stays white on paper.
 
 ## Tests
