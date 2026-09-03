@@ -128,10 +128,6 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-/// The name this type had while there was only ever one of them. Kept so the
-/// app and its tests keep compiling; it goes when the profiles UI lands.
-public typealias BlocklistConfig = BlockProfile
-
 extension TimeInterval {
     public static func brickMinutes(_ count: Double) -> TimeInterval { count * 60 }
 

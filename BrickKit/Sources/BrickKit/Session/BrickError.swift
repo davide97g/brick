@@ -9,8 +9,6 @@ public enum BrickError: Error, Equatable, Sendable {
     case sessionAlreadyActive
     case noActiveSession
     case tooEarlyToEnd(availableAt: Date)
-    /// The right tag, but the route has more steps in it.
-    case routeIncomplete(remaining: Int, next: String)
     case emergencyQuotaExhausted(replenishesAt: Date?)
     /// Reverse mode: a standing shield is up, so nothing else can start.
     case reverseArmed
@@ -46,8 +44,6 @@ extension BrickError: LocalizedError {
             return "No session is running."
         case .tooEarlyToEnd:
             return "Not yet."
-        case .routeIncomplete(let remaining, let next):
-            return "\(remaining) more tap\(remaining == 1 ? "" : "s"). Next: \(next)."
         case .emergencyQuotaExhausted:
             return "No emergency unlocks left."
         case .reverseArmed:

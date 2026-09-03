@@ -14,7 +14,7 @@ struct StateStoreTests {
         let start = Date(timeIntervalSince1970: 1_760_000_000)
         var state = BrickState(
             tag: BrickTag(uid: "04A1B2C3D4E580", placeNote: "on your desk", pairedAt: start),
-            blocklist: BlocklistConfig(selectionData: Data([0xAB]), appCount: 7),
+            blocklist: BlockProfile(selectionData: Data([0xAB]), appCount: 7),
             activeSession: Session(startedAt: start, plannedEnd: start.addingTimeInterval(3600))
         )
         state.emergency.record(at: start)

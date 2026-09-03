@@ -190,28 +190,6 @@ public enum SessionEngine {
         }
     }
 
-    /// The brick path for a one-tag exit: the scanned tag has to be *the*
-    /// brick, then the gate. A profile with a longer route refuses here and
-    /// says how much of the walk is left.
-    public static func validateTapEnd(
-        state: BrickState,
-        scannedUID: String,
-        now: Date
-    ) throws -> Session {
-        guard !state.tags.isEmpty else { throw BrickError.notPaired }
-        switch try validateRouteTap(state: state, scannedUID: scannedUID, now: now) {
-        case .completed(let session):
-            return session
-        case .advanced(_, let remaining, let nextUID):
-            throw BrickError.routeIncomplete(
-                remaining: remaining,
-                next: state.tag(withUID: nextUID)?.displayName ?? "the next brick"
-            )
-        case .wrongTag(let scanned, _):
-            throw BrickError.wrongTag(scanned: scanned)
-        }
-    }
-
     // MARK: Reverse — standing shields and permits
 
     /// Putting a reverse setup up. Nothing is scheduled: a standing shield has

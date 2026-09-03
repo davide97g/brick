@@ -73,9 +73,6 @@ public final class BrickController {
         SessionEngine.routeStatus(state: state, now: now)
     }
 
-    public var exitRoute: [BrickTag] { routeStatus?.steps ?? [] }
-    public var routeStepsWalked: Int { routeStatus?.walked ?? 0 }
-
     /// Where to go next. `nil` when nothing is running.
     public var nextRouteTag: BrickTag? { routeStatus?.next }
 
@@ -261,10 +258,6 @@ public final class BrickController {
         lastError = nil
     }
 
-    public func updatePlaceNote(_ note: String) {
-        persist { $0.tag?.placeNote = note }
-    }
-
     public func updateTag(uid: String, name: String? = nil, placeNote: String? = nil, profileID: UUID?? = nil) {
         persist { state in
             guard let index = state.tags.firstIndex(where: {
@@ -276,15 +269,11 @@ public final class BrickController {
         }
     }
 
-    /// Only allowed while nothing is running — otherwise unpairing would be a
-    /// free unlock.
-    public func unpairBrick() throws {
-        guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
-        persist { $0.tags.removeAll() }
-    }
-
     /// Drops one station. Its steps leave every exit route with it, so no
     /// profile is left pointing at a tag that no longer exists.
+    ///
+    /// Only allowed while nothing is running — otherwise unpairing would be a
+    /// free unlock.
     public func unpairTag(uid: String) throws {
         guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
         persist { state in
@@ -364,29 +353,6 @@ public final class BrickController {
         persist { state in
             guard let index = state.profiles.firstIndex(where: { $0.id == id }) else { return }
             state.profiles[index].exitRoute = uids
-        }
-    }
-
-    // MARK: Blocklist
-
-    public func updateBlocklist(
-        selectionData: Data?,
-        appCount: Int,
-        categoryCount: Int,
-        webDomainCount: Int
-    ) {
-        persist {
-            $0.blocklist.selectionData = selectionData
-            $0.blocklist.appCount = appCount
-            $0.blocklist.categoryCount = categoryCount
-            $0.blocklist.webDomainCount = webDomainCount
-        }
-    }
-
-    public func updateDurations(default defaultDuration: TimeInterval, minimum: TimeInterval) {
-        persist {
-            $0.blocklist.defaultDuration = max(.brickMinimumSession, defaultDuration)
-            $0.blocklist.minimumDuration = max(0, minimum)
         }
     }
 

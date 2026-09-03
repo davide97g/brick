@@ -20,7 +20,7 @@ private struct Harness {
             state.tag = BrickTag(uid: "04A1B2C3D4E580", placeNote: "on your desk", pairedAt: clock.now)
         }
         if withBlocklist {
-            state.blocklist = BlocklistConfig(
+            state.blocklist = BlockProfile(
                 selectionData: Data([0x01]),
                 appCount: 4,
                 minimumDuration: .brickMinutes(30)
@@ -82,7 +82,7 @@ struct BrickControllerTests {
         let store = InMemoryStateStore(
             BrickState(
                 tag: BrickTag(uid: "04A1B2C3D4E580", pairedAt: Date()),
-                blocklist: BlocklistConfig(selectionData: Data([0x01]), appCount: 1)
+                blocklist: BlockProfile(selectionData: Data([0x01]), appCount: 1)
             )
         )
         let shielding = RecordingShielding()
@@ -213,7 +213,7 @@ struct BrickControllerTests {
         let store = InMemoryStateStore(
             BrickState(
                 tag: BrickTag(uid: "04A1B2C3D4E580", pairedAt: Date()),
-                blocklist: BlocklistConfig(selectionData: Data([0x01]), appCount: 1)
+                blocklist: BlockProfile(selectionData: Data([0x01]), appCount: 1)
             )
         )
         let controller = BrickController(
@@ -232,7 +232,7 @@ struct BrickControllerTests {
         let h = Harness()
         try await h.controller.startSessionByTap(duration: .brickMinutes(60))
         #expect(throws: BrickError.sessionAlreadyActive) {
-            try h.controller.unpairBrick()
+            try h.controller.unpairTag(uid: "04A1B2C3D4E580")
         }
         #expect(h.store.load().tag != nil)
     }

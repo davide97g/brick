@@ -44,12 +44,6 @@ class BrickMonitorExtension: DeviceActivityMonitor {
         notifySessionEnded(wasPermit: wasPermit)
     }
 
-    /// A session removed from the other side (unpaired, emergency unlock) also
-    /// arrives here as a stopped interval.
-    override func intervalWillStartWarning(for activity: DeviceActivityName) {
-        super.intervalWillStartWarning(for: activity)
-    }
-
     private func notifySessionEnded(wasPermit: Bool) {
         let content = UNMutableNotificationContent()
         content.title = wasPermit ? "Time's up" : "Session over"

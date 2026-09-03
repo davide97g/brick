@@ -144,8 +144,6 @@ struct AlertContent: Identifiable {
             }
         case .wrongTag:
             message = "That tag isn't the brick you paired."
-        case .routeIncomplete:
-            message = "Keep going. Tapping the wrong brick starts the walk again."
         case .emptyBlocklist:
             message = "Choose the apps and sites this brick should block."
         default:

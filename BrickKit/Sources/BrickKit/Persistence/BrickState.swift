@@ -101,8 +101,6 @@ public struct BrickState: Codable, Equatable, Sendable {
         }
     }
 
-    public var isReadyToStart: Bool { hasKey && !blocklist.isEmpty }
-
     public func tag(withUID uid: String) -> BrickTag? {
         tags.first { $0.uid.caseInsensitiveCompare(uid) == .orderedSame }
     }

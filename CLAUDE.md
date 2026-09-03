@@ -74,7 +74,7 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 - **`project.yml` is the source of truth.** `Brick.xcodeproj` is generated and committed for convenience; edits made in Xcode's project editor are lost on the next `xcodegen generate`.
 - **xcodegen overwrites extension `Info.plist` files.** Declare `NSExtension` under `info.properties` in `project.yml`, never by hand-writing the plist — it will be silently replaced and the extension will fail to load with no error.
 - **App Group containers work in the Simulator**, so `FileStateStore.shared()` succeeds there. The Documents fallback in `AppEnvironment` is for builds without the entitlement.
-- **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (in `Shared/`) is the only encoder/decoder. `BlockProfile` caches the counts so the UI can describe a selection without decoding it. `BlocklistConfig` is a typealias for `BlockProfile`, kept while call sites migrate.
+- **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (in `Shared/`) is the only encoder/decoder. `BlockProfile` caches the counts so the UI can describe a selection without decoding it.
 - **Screen Time access can be revoked from Settings mid-session**, silently invalidating tokens. `reapplyShieldIfNeeded()` repairs it on foreground and reports failure; the UI shows a banner rather than letting the countdown lie.
 - **Extension code runs out of process under tight time and memory limits.** Keep `BrickMonitor` trivial.
 - **`BrickState` decodes field by field.** `load()` swallows any decode error and returns an

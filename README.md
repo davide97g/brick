@@ -49,19 +49,21 @@ the Family Controls (Development) capability.
 ```
 
 That is now paid for. Development profiles carry both capabilities and last a year. Distribution
-is a separate grant that Apple makes only on request, so uploading a build is still blocked —
-`store/SUBMISSION.md` has the exact error and what it needs.
+is a separate grant Apple makes only on request; it was approved team-wide on 2 September 2026,
+so the archive exports and the build uploads. Build 1.0 (2) was then rejected by an *automated*
+Family Controls check that the signed bundles contradict — `store/SUBMISSION.md` has the evidence
+and `store/REVIEW-REPLY.md` the draft reply.
 
 | Piece | State |
 |---|---|
-| `BrickKit` — models, session rules, persistence | 54 tests passing, runs on any platform |
+| `BrickKit` — models, session rules, persistence | 124 tests passing, runs on any platform |
 | `Brick` — the SwiftUI app | Builds and runs in the Simulator; installs and launches on device |
 | `BrickMonitor` — clears the shield when time is up | Compiles, embedded, never observed running |
 | `BrickShield` — the blocked-app screen | Compiles, embedded, never observed running |
 | Screen Time on device (authorization, shield) | Not yet exercised |
 | NFC pairing and reads | Not started — no tag yet |
 | Face ID as a stand-in key | Built and tested; the prompt itself is unverified on device |
-| App Store archive | Clean; export blocked on Family Controls (Distribution) |
+| App Store archive | Exported and uploaded; 1.0 (2) held by an automated review check |
 | Store metadata, privacy policy | Drafted in `store/` |
 | Stations, exit routes, reverse mode | Built and tested in `BrickKit`; screens verified in the Simulator |
 | Hardware | Parametric covers in `hardware/`, nothing printed |
@@ -125,13 +127,16 @@ Brick/                    SwiftUI app
   Adapters/               the real frameworks, and their Simulator stand-ins
   Onboarding/             three honest screens, then authorization and pairing
   Home/                   idle, running session, settings
-  Blocklist/              the one place FamilyActivityPicker is touched
+  Setups/                 a setup's rules, its walk, and the one FamilyActivityPicker
+  Bricks/                 the paired stations
   Session/                start sheet, ten-second emergency hold
+  Support/                theme, formatting, list chrome
 BrickKit/                 the rules, testable anywhere
-  Models/                 BrickTag, BlocklistConfig, Session, EmergencyLog
+  Models/                 BrickTag, BlockProfile, Session, EmergencyLog
   Persistence/            BrickState + App Group-backed FileStateStore
   Ports/                  the protocols above
   Session/                SessionEngine (rules), BrickController (orchestration)
+Shared/                   SelectionCoder + SelectionShield, compiled into both
 BrickMonitor/             DeviceActivityMonitorExtension
 BrickShield/              ShieldConfigurationExtension
 spikes/SpikeAShield/      the probe that proved the entitlement gate
@@ -158,7 +163,7 @@ A monolith, not a puck: roughly 45×45×20mm, matte PLA, flat top face with a re
 - Magnets and metal kept **≥8mm** from the coil — eddy currents detune the antenna
 - The iPhone's NFC antenna is at the **top edge of the back**, so the tap face needs to be big enough to aim at
 
-Models will land in `hardware/`.
+`hardware/brick-cover.scad` builds three covers — slab, puck, coaster. Nothing printed yet.
 
 ## Privacy
 
@@ -175,8 +180,8 @@ One thing no iOS app can fix, said plainly rather than buried: **deleting the ap
 
 Next, in order:
 
-1. Request Family Controls (Distribution) for all three App IDs — the one thing standing between
-   a clean archive and an upload (`store/SUBMISSION.md`)
+1. Reply to App Review with the entitlement evidence, and create the App Store Connect record
+   (`store/SUBMISSION.md`, `store/REVIEW-REPLY.md`)
 2. Buy NTAG215 tags, pair one, and watch a shield go up and clear itself for real
 3. Spike the three risks on device: shields surviving reboot, tag reads through printed PLA,
    `DeviceActivityMonitor` firing when the app is dead

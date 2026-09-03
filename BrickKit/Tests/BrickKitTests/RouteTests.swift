@@ -156,18 +156,12 @@ struct RouteTests {
     func oneStepRouteIsTheOldBehaviour() throws {
         let state = routedState(route: [])
         #expect(throws: BrickError.tooEarlyToEnd(availableAt: open)) {
-            try SessionEngine.validateTapEnd(state: state, scannedUID: desk, now: open.addingTimeInterval(-1))
+            try SessionEngine.validateRouteTap(state: state, scannedUID: desk, now: open.addingTimeInterval(-1))
         }
-        #expect(throws: Never.self) {
-            try SessionEngine.validateTapEnd(state: state, scannedUID: desk, now: open)
-        }
-    }
-
-    @Test("validateTapEnd says how much walk is left rather than ending early")
-    func tapEndReportsRemainingSteps() {
-        let state = routedState(route: [desk, hall, door])
-        #expect(throws: BrickError.routeIncomplete(remaining: 2, next: "sticker")) {
-            try SessionEngine.validateTapEnd(state: state, scannedUID: desk, now: open)
+        guard case .completed = try SessionEngine.validateRouteTap(
+            state: state, scannedUID: desk, now: open
+        ) else {
+            Issue.record("one tap is the whole walk"); return
         }
     }
 

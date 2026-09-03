@@ -11,7 +11,7 @@ private func pairedState(
 ) -> BrickState {
     BrickState(
         tag: BrickTag(uid: "04A1B2C3D4E580", pairedAt: t0),
-        blocklist: BlocklistConfig(
+        blocklist: BlockProfile(
             selectionData: Data([0x01]),
             appCount: 4,
             minimumDuration: minimumDuration
@@ -46,7 +46,7 @@ struct StartTests {
     @Test("requires a non-empty blocklist")
     func requiresBlocklist() {
         var state = pairedState()
-        state.blocklist = BlocklistConfig()
+        state.blocklist = BlockProfile()
         #expect(throws: BrickError.emptyBlocklist) {
             try SessionEngine.validateStart(state: state, duration: .brickMinutes(60), now: t0)
         }
@@ -93,22 +93,24 @@ struct TapEndTests {
     private let running = Session(startedAt: t0, plannedEnd: t0.addingTimeInterval(.brickMinutes(90)))
 
     @Test("rejects a tag that isn't the paired brick")
-    func rejectsWrongTag() {
-        #expect(throws: BrickError.wrongTag(scanned: "DEADBEEF")) {
-            try SessionEngine.validateTapEnd(
-                state: pairedState(activeSession: running), scannedUID: "DEADBEEF", now: t0
-            )
-        }
+    func rejectsWrongTag() throws {
+        let outcome = try SessionEngine.validateRouteTap(
+            state: pairedState(activeSession: running), scannedUID: "DEADBEEF", now: t0
+        )
+        #expect(outcome == .wrongTag(scanned: "DEADBEEF", expectedUID: "04A1B2C3D4E580"))
     }
 
     @Test("matches the paired UID case-insensitively")
     func matchesCaseInsensitively() throws {
         let state = pairedState(activeSession: running)
-        _ = try SessionEngine.validateTapEnd(
+        let outcome = try SessionEngine.validateRouteTap(
             state: state,
             scannedUID: "04a1b2c3d4e580",
             now: t0.addingTimeInterval(.brickMinutes(30))
         )
+        guard case .completed = outcome else {
+            Issue.record("the paired brick ends the session"); return
+        }
     }
 
     @Test("refuses before the minimum duration, even at the brick")
@@ -116,7 +118,7 @@ struct TapEndTests {
         let state = pairedState(minimumDuration: .brickMinutes(30), activeSession: running)
         let opensAt = t0.addingTimeInterval(.brickMinutes(30))
         #expect(throws: BrickError.tooEarlyToEnd(availableAt: opensAt)) {
-            try SessionEngine.validateTapEnd(
+            try SessionEngine.validateRouteTap(
                 state: state,
                 scannedUID: "04A1B2C3D4E580",
                 now: t0.addingTimeInterval(.brickMinutes(29))
@@ -127,28 +129,34 @@ struct TapEndTests {
     @Test("allows exactly at the minimum duration")
     func allowsAtBoundary() throws {
         let state = pairedState(minimumDuration: .brickMinutes(30), activeSession: running)
-        _ = try SessionEngine.validateTapEnd(
+        let outcome = try SessionEngine.validateRouteTap(
             state: state,
             scannedUID: "04A1B2C3D4E580",
             now: t0.addingTimeInterval(.brickMinutes(30))
         )
+        guard case .completed = outcome else {
+            Issue.record("the gate is open at exactly the minimum"); return
+        }
     }
 
     @Test("never gates the exit past the planned end")
     func clampsToPlannedEnd() throws {
         let short = Session(startedAt: t0, plannedEnd: t0.addingTimeInterval(.brickMinutes(20)))
         let state = pairedState(minimumDuration: .brickMinutes(45), activeSession: short)
-        _ = try SessionEngine.validateTapEnd(
+        let outcome = try SessionEngine.validateRouteTap(
             state: state,
             scannedUID: "04A1B2C3D4E580",
             now: t0.addingTimeInterval(.brickMinutes(20))
         )
+        guard case .completed = outcome else {
+            Issue.record("a minimum longer than the session cannot outlast it"); return
+        }
     }
 
     @Test("refuses when nothing is running")
     func refusesIdle() {
         #expect(throws: BrickError.noActiveSession) {
-            try SessionEngine.validateTapEnd(
+            try SessionEngine.validateRouteTap(
                 state: pairedState(), scannedUID: "04A1B2C3D4E580", now: t0
             )
         }
