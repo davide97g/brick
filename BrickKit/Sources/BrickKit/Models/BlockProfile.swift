@@ -40,6 +40,13 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
     /// office — so it is per profile.
     public var routeWindow: TimeInterval
 
+    /// Reverse mode only: how many permits the quota allows per `permitWindow`,
+    /// and how long a permit runs. Running out means blocked until the window
+    /// rolls, which is the product working rather than a fault.
+    public var permitAllowance: Int
+    public var permitWindow: TimeInterval
+    public var permitDuration: TimeInterval
+
     public init(
         id: UUID = UUID(),
         name: String = "Brick",
@@ -51,7 +58,10 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
         minimumDuration: TimeInterval = .brickMinutes(30),
         mode: ProfileMode = .block,
         exitRoute: [String] = [],
-        routeWindow: TimeInterval = .brickRouteWindow
+        routeWindow: TimeInterval = .brickRouteWindow,
+        permitAllowance: Int = 3,
+        permitWindow: TimeInterval = .brickPermitWindow,
+        permitDuration: TimeInterval = .brickMinimumSession
     ) {
         self.id = id
         self.name = name
@@ -64,6 +74,9 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
         self.mode = mode
         self.exitRoute = exitRoute
         self.routeWindow = routeWindow
+        self.permitAllowance = permitAllowance
+        self.permitWindow = permitWindow
+        self.permitDuration = permitDuration
     }
 
     public var isEmpty: Bool {
@@ -84,6 +97,7 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
     private enum CodingKeys: String, CodingKey {
         case id, name, selectionData, appCount, categoryCount, webDomainCount
         case defaultDuration, minimumDuration, mode, exitRoute, routeWindow
+        case permitAllowance, permitWindow, permitDuration
     }
 
     /// Decoded field by field: this type was written to disk as
@@ -106,6 +120,11 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
         exitRoute = try container.decodeIfPresent([String].self, forKey: .exitRoute) ?? []
         routeWindow = try container.decodeIfPresent(TimeInterval.self, forKey: .routeWindow)
             ?? .brickRouteWindow
+        permitAllowance = try container.decodeIfPresent(Int.self, forKey: .permitAllowance) ?? 3
+        permitWindow = try container.decodeIfPresent(TimeInterval.self, forKey: .permitWindow)
+            ?? .brickPermitWindow
+        permitDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .permitDuration)
+            ?? .brickMinimumSession
     }
 }
 
@@ -123,4 +142,8 @@ extension TimeInterval {
     /// Long enough to walk a house, short enough that yesterday's half-walked
     /// route doesn't count towards today's.
     public static let brickRouteWindow: TimeInterval = .brickMinutes(10)
+
+    /// Permits are counted by the day: a quota that rolled weekly would leave
+    /// someone blocked on a Friday for a Monday they can't remember.
+    public static let brickPermitWindow: TimeInterval = 24 * 60 * 60
 }

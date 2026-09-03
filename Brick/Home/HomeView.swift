@@ -11,10 +11,14 @@ struct HomeView: View {
 
     private var controller: BrickController { model.controller }
 
+    /// Reverse mode reads upside down: paper field, machined card. Nothing
+    /// else about the instrument changes.
+    private var surface: Surface { controller.isArmed ? .reversed : .standard }
+
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.ink.ignoresSafeArea()
+                surface.field.ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     header
@@ -25,7 +29,9 @@ struct HomeView: View {
 
                     Spacer(minLength: 0)
 
-                    if controller.activeSession != nil {
+                    if controller.isPermitRunning {
+                        permitInstrument
+                    } else if controller.activeSession != nil {
                         instrument
                     } else {
                         object
@@ -33,8 +39,12 @@ struct HomeView: View {
 
                     Spacer(minLength: 0)
 
-                    if controller.activeSession != nil {
+                    if controller.isPermitRunning {
+                        permitControls
+                    } else if controller.activeSession != nil {
                         runningControls
+                    } else if controller.isArmed {
+                        armedControls
                     } else {
                         idleControls
                     }
@@ -76,8 +86,8 @@ struct HomeView: View {
 
     private var header: some View {
         HStack {
-            Text(controller.activeSession != nil ? "Bricked" : "Brick")
-                .engraved(Theme.chalk)
+            Text(headerTitle)
+                .engraved(surface.fieldText)
 
             Spacer()
 
@@ -86,7 +96,7 @@ struct HomeView: View {
             } label: {
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 17, weight: .light))
-                    .foregroundStyle(Theme.ash)
+                    .foregroundStyle(surface.fieldMuted)
                     .frame(width: 44, height: 44)
                     .contentShape(.rect)
             }
@@ -95,6 +105,12 @@ struct HomeView: View {
         .padding(.leading, 26)
         .padding(.trailing, 12)
         .padding(.top, 8)
+    }
+
+    private var headerTitle: String {
+        if controller.isPermitRunning { return "Open" }
+        if controller.isArmed { return "Standing" }
+        return controller.activeSession != nil ? "Bricked" : "Brick"
     }
 
     private var warningText: (String, String)? {
@@ -134,17 +150,115 @@ struct HomeView: View {
                 gate: gate(of: session),
                 remaining: session.remaining(at: controller.now),
                 caption: "until \(Format.clockTime(session.plannedEnd))",
-                isOpen: controller.canEndWithKey
+                isOpen: controller.canEndWithKey,
+                surface: surface
             )
             .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
         }
     }
 
+    // MARK: Reverse
+
+    /// The same bezel, counting an open window down rather than a shut one.
+    @ViewBuilder
+    private var permitInstrument: some View {
+        if let session = controller.activeSession {
+            SessionBezel(
+                progress: progress(of: session),
+                gate: nil,
+                remaining: session.remaining(at: controller.now),
+                caption: "open until \(Format.clockTime(session.plannedEnd))",
+                isOpen: true,
+                surface: surface
+            )
+            .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
+        }
+    }
+
+    private var permitControls: some View {
+        PaperCard(surface: surface) {
+            Text("It goes back up by itself.")
+                .font(.system(size: 15))
+                .foregroundStyle(surface.cardMuted)
+
+            Button("Put it back now") { controller.closePermitEarly() }
+                .buttonStyle(SolidPill(surface: surface))
+        }
+    }
+
+    private var armedControls: some View {
+        PaperCard(surface: surface) {
+            Text(controller.armedProfile.map { "\($0.name) is up." } ?? "Standing.")
+                .font(.system(size: 15))
+                .foregroundStyle(surface.cardMuted)
+
+            VStack(spacing: 10) {
+                Button {
+                    Task { await model.scan { try await controller.grantPermit() } }
+                } label: {
+                    Text(openButtonTitle)
+                }
+                .buttonStyle(SolidPill(surface: surface))
+                .disabled(model.scanning || controller.permitsRemaining == 0)
+
+                Text(openingsText)
+                    .engraved(surface.cardMuted)
+
+                Button("Take it down") {
+                    Task { await model.scan { try await controller.disarmReverse() } }
+                }
+                .font(.system(size: 14))
+                .foregroundStyle(controller.canDisarm ? surface.cardText : surface.cardMuted)
+                .disabled(!controller.canDisarm || model.scanning)
+            }
+
+            if controller.permitsRemaining == 0 {
+                EmergencyUnlockButton(
+                    remainingAllowance: controller.emergencyRemaining,
+                    title: "Hold for one more",
+                    surface: surface
+                ) {
+                    Task {
+                        await model.scan {
+                            try await controller.grantPermit(spendingEmergency: true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var openButtonTitle: String {
+        if model.scanning { return "Hold near your brick" }
+        guard controller.permitsRemaining > 0 else { return "Nothing left today" }
+        let length = Format.duration(controller.armedProfile?.permitDuration ?? .brickMinimumSession)
+        return controller.unlockMethod == .brick
+            ? "Tap your brick for \(length)"
+            : "Open for \(length)"
+    }
+
+    private var openingsText: String {
+        let left = controller.permitsRemaining
+        if left == 0, let opensAt = nextOpeningAt {
+            return "next opening \(Format.clockTime(opensAt))"
+        }
+        return "\(left) opening\(left == 1 ? "" : "s") left today"
+    }
+
+    private var nextOpeningAt: Date? {
+        guard let profile = controller.armedProfile else { return nil }
+        return controller.state.permits.nextReplenishment(
+            at: controller.now,
+            allowance: profile.permitAllowance,
+            window: profile.permitWindow
+        )
+    }
+
     private var runningControls: some View {
-        PaperCard {
+        PaperCard(surface: surface) {
             Text(controller.keyDescription)
                 .font(.system(size: 15))
-                .foregroundStyle(Theme.ashOnPaper)
+                .foregroundStyle(surface.cardMuted)
                 .multilineTextAlignment(.center)
 
             VStack(spacing: 10) {
@@ -153,15 +267,15 @@ struct HomeView: View {
                 } label: {
                     Text(endButtonTitle)
                 }
-                .buttonStyle(SolidPill())
+                .buttonStyle(SolidPill(surface: surface))
                 .disabled(!controller.canEndWithKey || model.scanning)
 
                 if !controller.canEndWithKey, let opensAt = controller.keyExitOpensAt {
                     Text(gateText(opensAt))
-                        .engraved(Theme.ashOnPaper)
+                        .engraved(surface.cardMuted)
                 } else if let route = controller.routeStatus, !route.isSingleTap {
                     Text("\(route.walked) of \(route.steps.count) taps done")
-                        .engraved(Theme.ashOnPaper)
+                        .engraved(surface.cardMuted)
                 }
             }
 
@@ -210,23 +324,23 @@ struct HomeView: View {
             BrickBlock(width: 196)
 
             VStack(spacing: 8) {
-                Text("Ready")
+                Text(controller.isArmed ? "Blocked" : "Ready")
                     .readout(size: 40)
-                    .foregroundStyle(Theme.chalk)
+                    .foregroundStyle(surface.fieldText)
                 Text(controller.activeProfile.summary)
-                    .engraved()
+                    .engraved(surface.fieldMuted)
             }
         }
     }
 
     private var idleControls: some View {
-        PaperCard {
+        PaperCard(surface: surface) {
             if let last = controller.state.history.last {
                 lastSession(last)
             }
 
             Button("Start a session") { startSheetShown = true }
-                .buttonStyle(SolidPill())
+                .buttonStyle(SolidPill(surface: surface))
         }
     }
 
@@ -252,6 +366,7 @@ struct HomeView: View {
         case .tappedBrick: return "ended at the brick"
         case .biometrics: return "ended with \(controller.biometricName)"
         case .emergency: return "emergency unlock"
+        case .closedEarly: return "closed early"
         case .none: return ""
         }
     }

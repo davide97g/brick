@@ -7,6 +7,11 @@ import SwiftUI
 /// across the pill is the interface admitting something is being spent.
 struct EmergencyUnlockButton: View {
     var remainingAllowance: Int
+    /// Reverse mode spends the same allowance on the opposite thing, so the
+    /// label is the caller's to name.
+    var title = "Hold to unlock"
+    var holdingTitle = "Keep holding"
+    var surface: Surface = .standard
     var action: () -> Void
 
     @State private var progress: Double = 0
@@ -18,7 +23,7 @@ struct EmergencyUnlockButton: View {
     var body: some View {
         VStack(spacing: 8) {
             ZStack {
-                Capsule().strokeBorder(Theme.inkOnPaper.opacity(0.18), lineWidth: 1)
+                Capsule().strokeBorder(surface.cardText.opacity(0.18), lineWidth: 1)
 
                 GeometryReader { proxy in
                     Capsule()
@@ -27,7 +32,7 @@ struct EmergencyUnlockButton: View {
                 }
                 .clipShape(Capsule())
 
-                Text(progress > 0 ? "Keep holding" : "Hold to unlock")
+                Text(progress > 0 ? holdingTitle : title)
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(fillHasReachedLabel ? Theme.paper : labelColor)
             }
@@ -41,7 +46,7 @@ struct EmergencyUnlockButton: View {
             .disabled(isSpent)
 
             Text(allowanceText)
-                .engraved(Theme.ashOnPaper)
+                .engraved(surface.cardMuted)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Emergency unlock")
@@ -56,7 +61,7 @@ struct EmergencyUnlockButton: View {
     }
 
     private var labelColor: Color {
-        isSpent ? Theme.ashOnPaper : Theme.oxide
+        isSpent ? surface.cardMuted : Theme.oxide
     }
 
     /// Once the fill passes the centre the label sits on oxide, not paper.

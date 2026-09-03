@@ -51,10 +51,11 @@ public final class BrickController {
     /// The rules in force: the running session's profile, or the one a bare
     /// start would use.
     public var activeProfile: BlockProfile {
-        guard let session = state.activeSession else {
-            return state.profiles.first ?? BlockProfile()
+        if let session = state.activeSession {
+            return SessionEngine.profile(for: session, in: state)
         }
-        return SessionEngine.profile(for: session, in: state)
+        // A standing shield is the rules in force even with no session.
+        return state.armedProfile ?? state.profiles.first ?? BlockProfile()
     }
 
     /// Whether the key — brick or face — works yet.
@@ -79,6 +80,21 @@ public final class BrickController {
     public var nextRouteTag: BrickTag? { routeStatus?.next }
 
     public var emergencyRemaining: Int { state.emergency.remainingAllowance(at: now) }
+
+    // MARK: Reverse
+
+    /// The reverse setup standing right now, if any.
+    public var armedProfile: BlockProfile? { state.armedProfile }
+    public var isArmed: Bool { state.armedProfileID != nil }
+    public var isPermitRunning: Bool { state.activeSession?.kind == .permit }
+    public var permitsRemaining: Int { SessionEngine.permitsRemaining(state: state, now: now) ?? 0 }
+    public var disarmOpensAt: Date? { SessionEngine.disarmOpensAt(state: state) }
+
+    public var canDisarm: Bool {
+        guard isArmed, !isPermitRunning else { return false }
+        guard let opensAt = disarmOpensAt else { return true }
+        return now >= opensAt
+    }
 
     public var unlockMethod: UnlockMethod { state.unlock }
 
@@ -112,7 +128,15 @@ public final class BrickController {
         state = store.load()
         guard SessionEngine.needsExpiry(state: state, now: now) else { return }
         let plannedEnd = state.activeSession?.plannedEnd ?? now
-        shielding.clear()
+        // A block session ends by clearing; a permit ends by putting the
+        // standing shield back. Getting this backwards would either strand the
+        // user or quietly leave reverse mode off.
+        switch SessionEngine.expiryAction(state: state) {
+        case .clear:
+            shielding.clear()
+        case .reapply(let selectionData):
+            try? shielding.apply(selectionData: selectionData)
+        }
         scheduler.cancelScheduledEnd()
         notifier.cancelSessionNotifications()
         persist { SessionEngine.close(&$0, reason: .scheduled, at: plannedEnd) }
@@ -132,13 +156,28 @@ public final class BrickController {
     ///   can say so rather than let the user believe they're blocked.
     @discardableResult
     public func reapplyShieldIfNeeded() -> Bool {
-        guard let session = state.activeSession, session.isActive else { return true }
-        do {
-            try shielding.apply(selectionData: SessionEngine.profile(for: session, in: state).selectionData)
-            return true
-        } catch {
-            return false
+        if let session = state.activeSession, session.isActive {
+            // A permit is an open window on purpose; re-applying here would
+            // shut it early.
+            guard session.kind != .permit else { return true }
+            do {
+                try shielding.apply(
+                    selectionData: SessionEngine.profile(for: session, in: state).selectionData
+                )
+                return true
+            } catch {
+                return false
+            }
         }
+        if let armed = state.armedProfile {
+            do {
+                try shielding.apply(selectionData: armed.selectionData)
+                return true
+            } catch {
+                return false
+            }
+        }
+        return true
     }
 
     // MARK: Pairing
@@ -284,6 +323,21 @@ public final class BrickController {
             for index in state.tags.indices where state.tags[index].profileID == id {
                 state.tags[index].profileID = state.profiles.first?.id
             }
+        }
+    }
+
+    /// Direction is the one setting that cannot change under a live shield:
+    /// a setup that flipped while standing would leave the phone blocked with
+    /// no rule describing why.
+    public func setMode(_ mode: ProfileMode, forProfile id: UUID) throws {
+        guard state.armedProfileID != id else { throw record(.reverseArmed) }
+        if let session = state.activeSession, session.isActive,
+           SessionEngine.profile(for: session, in: state).id == id {
+            throw record(.sessionAlreadyActive)
+        }
+        persist { state in
+            guard let index = state.profiles.firstIndex(where: { $0.id == id }) else { return }
+            state.profiles[index].mode = mode
         }
     }
 
@@ -458,6 +512,128 @@ public final class BrickController {
             }
         }
         finish(reason: .emergency)
+    }
+
+    // MARK: Reverse — arming, permits, disarming
+
+    /// Puts a reverse setup up. With a brick that means tapping one of its
+    /// tags; the object is still what starts it.
+    public func armReverse(profileID: UUID? = nil) async throws {
+        let profile: BlockProfile
+        switch state.unlock {
+        case .brick:
+            let uid = try await tagReader.readTagUID()
+            guard let tapped = SessionEngine.profile(forTagUID: uid, in: state) else {
+                throw record(.wrongTag(scanned: uid))
+            }
+            if let profileID, tapped.id != profileID { throw record(.wrongTag(scanned: uid)) }
+            profile = tapped
+        case .biometric:
+            guard let chosen = state.profile(id: profileID) ?? state.profiles.first else {
+                throw record(.emptyBlocklist)
+            }
+            try await biometrics.authenticate(reason: "Put this setup up.")
+            profile = chosen
+        }
+
+        do {
+            try SessionEngine.validateArm(state: state, profile: profile, now: now)
+        } catch let error as BrickError {
+            throw record(error)
+        }
+        try shielding.apply(selectionData: profile.selectionData)
+        persist { SessionEngine.arm(&$0, profile: profile, at: self.now) }
+        lastError = nil
+    }
+
+    /// Buys an open window. The shield comes down only once its return is
+    /// scheduled — rule 8, mirrored: never lift a shield without a way back.
+    public func grantPermit(duration: TimeInterval? = nil, spendingEmergency: Bool = false) async throws {
+        var scannedUID: String?
+        switch state.unlock {
+        case .brick:
+            scannedUID = try await tagReader.readTagUID()
+        case .biometric:
+            try await biometrics.authenticate(reason: "Open the phone for a while.")
+        }
+
+        let session: Session
+        do {
+            session = try SessionEngine.validatePermit(
+                state: state,
+                scannedUID: scannedUID,
+                duration: duration,
+                spendingEmergency: spendingEmergency,
+                now: now
+            )
+        } catch let error as BrickError {
+            throw record(error)
+        }
+
+        // Filed first so a monitor callback that arrives immediately finds a
+        // permit to close rather than an empty state.
+        persist { SessionEngine.openPermit(&$0, session, at: self.now) }
+        do {
+            try scheduler.scheduleEnd(of: session)
+        } catch {
+            persist {
+                $0.activeSession = nil
+                if session.grantedByEmergency, !$0.emergency.uses.isEmpty {
+                    $0.emergency.uses.removeLast()
+                } else if !$0.permits.uses.isEmpty {
+                    $0.permits.uses.removeLast()
+                }
+            }
+            throw error
+        }
+        shielding.clear()
+        notifier.scheduleSessionNotifications(for: session)
+        lastError = nil
+    }
+
+    /// Puts the shield back before the permit runs out. Always allowed: there
+    /// is nothing to protect the user from in this direction.
+    public func closePermitEarly() {
+        guard let session = state.activeSession, session.kind == .permit, session.isActive else { return }
+        if let armed = state.armedProfile {
+            try? shielding.apply(selectionData: armed.selectionData)
+        }
+        scheduler.cancelScheduledEnd()
+        notifier.cancelSessionNotifications()
+        let timestamp = now
+        persist { SessionEngine.close(&$0, reason: .closedEarly, at: timestamp) }
+        lastError = nil
+    }
+
+    /// Takes the standing shield down for good — the way out of reverse mode,
+    /// behind the same minimum a session's gate uses.
+    public func disarmReverse() async throws {
+        var scannedUID: String?
+        switch state.unlock {
+        case .brick:
+            do {
+                _ = try SessionEngine.validateDisarm(state: state, scannedUID: nil, now: now)
+            } catch let error as BrickError {
+                throw record(error)  // refuse before the scan when the gate is shut
+            }
+            scannedUID = try await tagReader.readTagUID()
+        case .biometric:
+            do {
+                _ = try SessionEngine.validateDisarm(state: state, scannedUID: nil, now: now)
+            } catch let error as BrickError {
+                throw record(error)
+            }
+            try await biometrics.authenticate(reason: "Take this setup down.")
+        }
+
+        do {
+            try SessionEngine.validateDisarm(state: state, scannedUID: scannedUID, now: now)
+        } catch let error as BrickError {
+            throw record(error)
+        }
+        shielding.clear()
+        persist { SessionEngine.disarm(&$0) }
+        lastError = nil
     }
 
     // MARK: Plumbing

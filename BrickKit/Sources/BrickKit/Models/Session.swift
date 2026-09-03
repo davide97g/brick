@@ -9,6 +9,8 @@ public enum EndReason: String, Codable, Equatable, Sendable {
     case biometrics
     /// User spent one of their emergency unlocks.
     case emergency
+    /// Reverse mode: the user put the shield back before the permit ran out.
+    case closedEarly
 }
 
 /// Which direction the session runs in.

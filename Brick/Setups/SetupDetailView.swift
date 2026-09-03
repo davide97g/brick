@@ -31,6 +31,32 @@ struct SetupDetailView: View {
             && controller.activeProfile.id == setupID
     }
 
+    private var isArmed: Bool { controller.armedProfile?.id == setupID }
+
+    private var modeBinding: Binding<ProfileMode> {
+        Binding(
+            get: { setup.mode },
+            set: { newValue in
+                do {
+                    try controller.setMode(newValue, forProfile: setupID)
+                } catch {
+                    model.present(error)
+                }
+            }
+        )
+    }
+
+    private var allowanceBinding: Binding<Int> {
+        Binding(
+            get: { setup.permitAllowance },
+            set: { newValue in
+                var updated = setup
+                updated.permitAllowance = newValue
+                controller.updateProfile(updated)
+            }
+        )
+    }
+
     private var bricks: [BrickTag] {
         controller.state.tags.filter { $0.profileID == setupID }
     }
@@ -58,49 +84,97 @@ struct SetupDetailView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("Changes apply to your next session, not the one running.")
+                Text(setup.mode == .block
+                     ? "Changes apply to your next session, not the one running."
+                     : "Changes apply the next time this goes up.")
                     .foregroundStyle(Theme.ash)
             }
 
             Section {
-                durationPicker(
-                    title: "Default",
-                    value: setup.defaultDuration,
-                    options: [15, 30, 45, 60, 90, 120, 180, 240, 360, 480]
-                ) { newValue in
-                    var updated = setup
-                    updated.defaultDuration = max(.brickMinimumSession, newValue)
-                    controller.updateProfile(updated)
+                if setup.mode == .block {
+                    durationPicker(
+                        title: "Default",
+                        value: setup.defaultDuration,
+                        options: [15, 30, 45, 60, 90, 120, 180, 240, 360, 480]
+                    ) { newValue in
+                        var updated = setup
+                        updated.defaultDuration = max(.brickMinimumSession, newValue)
+                        controller.updateProfile(updated)
+                    }
                 }
 
                 durationPicker(
-                    title: "Locked for at least",
+                    title: setup.mode == .block ? "Locked for at least" : "Stands for at least",
                     value: setup.minimumDuration,
-                    options: [0, 5, 15, 30, 45, 60, 90, 180, 360]
+                    options: setup.mode == .block
+                        ? [0, 5, 15, 30, 45, 60, 90, 180, 360]
+                        : [60, 180, 360, 720, 1440]
                 ) { newValue in
                     var updated = setup
                     updated.minimumDuration = max(0, newValue)
                     controller.updateProfile(updated)
                 }
             } header: {
-                InkSectionHeader(text: "Session length")
+                InkSectionHeader(text: setup.mode == .block ? "Session length" : "How long it stands")
             } footer: {
-                Text("Until the minimum has passed, tapping the brick won't end the session — that's what makes it a commitment rather than a switch. Emergency unlocks still work.")
+                Text(setup.mode == .block
+                     ? "Until the minimum has passed, tapping the brick won't end the session — that's what makes it a commitment rather than a switch. Emergency unlocks still work."
+                     : "How long it has to stand before it can be taken down.")
                     .foregroundStyle(Theme.ash)
             }
 
             Section {
-                NavigationLink {
-                    ExitRouteView(setupID: setupID)
+                Picker(selection: modeBinding) {
+                    Text("Tap to block").tag(ProfileMode.block)
+                    Text("Tap to open").tag(ProfileMode.reverse)
                 } label: {
-                    LabeledContent {
-                        Text(routeSummary).foregroundStyle(Theme.ash)
+                    Text("Direction").foregroundStyle(Theme.chalk)
+                }
+                .pickerStyle(.segmented)
+                .disabled(isRunning || isArmed)
+
+                if setup.mode == .reverse {
+                    Picker(selection: allowanceBinding) {
+                        ForEach(1...6, id: \.self) { count in
+                            Text("\(count)").tag(count)
+                        }
                     } label: {
-                        Text("Way out").foregroundStyle(Theme.chalk)
+                        Text("Openings a day").foregroundStyle(Theme.chalk)
+                    }
+
+                    durationPicker(
+                        title: "Each opening",
+                        value: setup.permitDuration,
+                        options: [15, 30, 45, 60]
+                    ) { newValue in
+                        var updated = setup
+                        updated.permitDuration = max(.brickMinimumSession, newValue)
+                        controller.updateProfile(updated)
                     }
                 }
+            } header: {
+                InkSectionHeader(text: "Direction")
             } footer: {
-                Text(routeFooter).foregroundStyle(Theme.ash)
+                Text(setup.mode == .block
+                     ? "Tapping a brick blocks these apps for a while."
+                     : "These apps stay blocked. Tapping a brick opens them for one window, then they close again — and taking the whole thing down is behind the minimum above.")
+                    .foregroundStyle(Theme.ash)
+            }
+
+            if setup.mode == .block {
+                Section {
+                    NavigationLink {
+                        ExitRouteView(setupID: setupID)
+                    } label: {
+                        LabeledContent {
+                            Text(routeSummary).foregroundStyle(Theme.ash)
+                        } label: {
+                            Text("Way out").foregroundStyle(Theme.chalk)
+                        }
+                    }
+                } footer: {
+                    Text(routeFooter).foregroundStyle(Theme.ash)
+                }
             }
 
             Section {

@@ -19,16 +19,29 @@ class BrickMonitorExtension: DeviceActivityMonitor {
         super.intervalDidEnd(for: activity)
         guard activity.rawValue == BrickIdentifiers.deviceActivity else { return }
 
-        store.clearAllSettings()
+        var wasPermit = false
 
-        if let state = FileStateStore.shared() {
-            state.mutate { current in
+        if let stateStore = FileStateStore.shared() {
+            stateStore.mutate { current in
+                // A session ends by clearing the shield; a permit ends by
+                // putting the standing one back. This process is the only
+                // thing running, so getting the direction right here is the
+                // whole of it.
+                switch SessionEngine.expiryAction(state: current) {
+                case .clear:
+                    store.clearAllSettings()
+                case .reapply(let selectionData):
+                    wasPermit = true
+                    try? SelectionShield.apply(selectionData, to: store)
+                }
                 let plannedEnd = current.activeSession?.plannedEnd ?? Date()
                 SessionEngine.close(&current, reason: .scheduled, at: plannedEnd)
             }
+        } else {
+            store.clearAllSettings()
         }
 
-        notifySessionEnded()
+        notifySessionEnded(wasPermit: wasPermit)
     }
 
     /// A session removed from the other side (unpaired, emergency unlock) also
@@ -37,10 +50,10 @@ class BrickMonitorExtension: DeviceActivityMonitor {
         super.intervalWillStartWarning(for: activity)
     }
 
-    private func notifySessionEnded() {
+    private func notifySessionEnded(wasPermit: Bool) {
         let content = UNMutableNotificationContent()
-        content.title = "Session over"
-        content.body = "Everything is unblocked."
+        content.title = wasPermit ? "Time's up" : "Session over"
+        content.body = wasPermit ? "Blocked again." : "Everything is unblocked."
         content.sound = .default
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(

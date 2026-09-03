@@ -12,6 +12,11 @@ public enum BrickError: Error, Equatable, Sendable {
     /// The right tag, but the route has more steps in it.
     case routeIncomplete(remaining: Int, next: String)
     case emergencyQuotaExhausted(replenishesAt: Date?)
+    /// Reverse mode: a standing shield is up, so nothing else can start.
+    case reverseArmed
+    case notArmed
+    case wrongMode
+    case permitQuotaExhausted(replenishesAt: Date?)
     case biometricUnavailable
     case biometricFailed
     /// The user dismissed the prompt. Not an error worth an alert.
@@ -43,6 +48,14 @@ extension BrickError: LocalizedError {
             return "\(remaining) more tap\(remaining == 1 ? "" : "s"). Next: \(next)."
         case .emergencyQuotaExhausted:
             return "No emergency unlocks left."
+        case .reverseArmed:
+            return "A setup is standing."
+        case .notArmed:
+            return "Nothing is standing."
+        case .wrongMode:
+            return "That setup doesn't work that way."
+        case .permitQuotaExhausted:
+            return "No openings left today."
         case .biometricUnavailable:
             return "Face ID or Touch ID isn't set up on this iPhone."
         case .biometricFailed:

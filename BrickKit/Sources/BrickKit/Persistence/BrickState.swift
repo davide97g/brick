@@ -13,9 +13,14 @@ public struct BrickState: Codable, Equatable, Sendable {
     /// Reverse mode: the profile whose standing shield is up, with no session
     /// running. `nil` in the ordinary direction.
     public var armedProfileID: UUID?
+    /// When the standing shield went up. The disarm gate is measured from here.
+    public var armedAt: Date?
     public var routeProgress: RouteProgress?
     public var history: [Session]
     public var emergency: EmergencyLog
+    /// Reverse mode's own rolling quota: how many times the phone has been
+    /// opened lately. Separate from `emergency`, which stays the last resort.
+    public var permits: EmergencyLog
 
     public init(
         tags: [BrickTag] = [],
@@ -23,18 +28,22 @@ public struct BrickState: Codable, Equatable, Sendable {
         unlock: UnlockMethod = .brick,
         activeSession: Session? = nil,
         armedProfileID: UUID? = nil,
+        armedAt: Date? = nil,
         routeProgress: RouteProgress? = nil,
         history: [Session] = [],
-        emergency: EmergencyLog = EmergencyLog()
+        emergency: EmergencyLog = EmergencyLog(),
+        permits: EmergencyLog = EmergencyLog()
     ) {
         self.tags = tags
         self.profiles = profiles
         self.unlock = unlock
         self.activeSession = activeSession
         self.armedProfileID = armedProfileID
+        self.armedAt = armedAt
         self.routeProgress = routeProgress
         self.history = history
         self.emergency = emergency
+        self.permits = permits
     }
 
     /// The shape of the state while there was one tag and one blocklist. Kept
@@ -103,11 +112,14 @@ public struct BrickState: Codable, Equatable, Sendable {
         return profiles.first { $0.id == id }
     }
 
+    /// The reverse setup currently standing, if any.
+    public var armedProfile: BlockProfile? { profile(id: armedProfileID) }
+
     // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
-        case tags, profiles, unlock, activeSession, armedProfileID, routeProgress
-        case history, emergency
+        case tags, profiles, unlock, activeSession, armedProfileID, armedAt, routeProgress
+        case history, emergency, permits
         // Written by every build before profiles existed.
         case tag, blocklist
     }
@@ -121,9 +133,11 @@ public struct BrickState: Codable, Equatable, Sendable {
         unlock = try container.decodeIfPresent(UnlockMethod.self, forKey: .unlock) ?? .brick
         activeSession = try container.decodeIfPresent(Session.self, forKey: .activeSession)
         armedProfileID = try container.decodeIfPresent(UUID.self, forKey: .armedProfileID)
+        armedAt = try container.decodeIfPresent(Date.self, forKey: .armedAt)
         routeProgress = try container.decodeIfPresent(RouteProgress.self, forKey: .routeProgress)
         history = try container.decodeIfPresent([Session].self, forKey: .history) ?? []
         emergency = try container.decodeIfPresent(EmergencyLog.self, forKey: .emergency) ?? EmergencyLog()
+        permits = try container.decodeIfPresent(EmergencyLog.self, forKey: .permits) ?? EmergencyLog()
 
         let decodedProfiles = try container.decodeIfPresent([BlockProfile].self, forKey: .profiles)
         let legacyBlocklist = try container.decodeIfPresent(BlockProfile.self, forKey: .blocklist)
@@ -151,8 +165,10 @@ public struct BrickState: Codable, Equatable, Sendable {
         try container.encode(unlock, forKey: .unlock)
         try container.encodeIfPresent(activeSession, forKey: .activeSession)
         try container.encodeIfPresent(armedProfileID, forKey: .armedProfileID)
+        try container.encodeIfPresent(armedAt, forKey: .armedAt)
         try container.encodeIfPresent(routeProgress, forKey: .routeProgress)
         try container.encode(history, forKey: .history)
         try container.encode(emergency, forKey: .emergency)
+        try container.encode(permits, forKey: .permits)
     }
 }

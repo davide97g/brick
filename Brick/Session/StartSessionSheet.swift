@@ -30,7 +30,7 @@ struct StartSessionSheet: View {
                         .engraved()
                         .frame(minWidth: 60, minHeight: 44, alignment: .leading)
                     Spacer()
-                    Text("New session").engraved(Theme.chalk)
+                    Text(isReverse ? "Standing setup" : "New session").engraved(Theme.chalk)
                     Spacer()
                     Color.clear.frame(width: 60, height: 44)
                 }
@@ -39,26 +39,36 @@ struct StartSessionSheet: View {
 
                 Spacer(minLength: 0)
 
-                VStack(spacing: 10) {
-                    Text(Format.duration(.brickMinutes(minutes)))
-                        .readout(size: 66)
-                        .foregroundStyle(Theme.chalk)
-                        .contentTransition(.numericText())
-
-                    Text("ends at \(Format.clockTime(controller.now.addingTimeInterval(.brickMinutes(minutes))))")
-                        .engraved()
-                }
-
-                Picker("Length", selection: $minutes) {
-                    ForEach(options, id: \.self) { option in
-                        Text(Format.duration(.brickMinutes(option)))
+                if isReverse {
+                    VStack(spacing: 10) {
+                        Text("Standing")
+                            .readout(size: 56)
                             .foregroundStyle(Theme.chalk)
-                            .tag(option)
+                        Text("blocked until you tap")
+                            .engraved()
                     }
+                } else {
+                    VStack(spacing: 10) {
+                        Text(Format.duration(.brickMinutes(minutes)))
+                            .readout(size: 66)
+                            .foregroundStyle(Theme.chalk)
+                            .contentTransition(.numericText())
+
+                        Text("ends at \(Format.clockTime(controller.now.addingTimeInterval(.brickMinutes(minutes))))")
+                            .engraved()
+                    }
+
+                    Picker("Length", selection: $minutes) {
+                        ForEach(options, id: \.self) { option in
+                            Text(Format.duration(.brickMinutes(option)))
+                                .foregroundStyle(Theme.chalk)
+                                .tag(option)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 150)
+                    .padding(.top, 4)
                 }
-                .pickerStyle(.wheel)
-                .frame(height: 150)
-                .padding(.top, 4)
 
                 Spacer(minLength: 0)
 
@@ -66,7 +76,7 @@ struct StartSessionSheet: View {
                     if controller.state.profiles.count > 1 { setupControl }
 
                     if setup.minimumDuration > 0 {
-                        Text(lockNotice)
+                        Text(isReverse ? standingNotice : lockNotice)
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.ashOnPaper)
                             .multilineTextAlignment(.center)
@@ -75,12 +85,16 @@ struct StartSessionSheet: View {
                     Button {
                         Task {
                             await model.scan {
-                                try await controller.startSessionUsingKey(
-                                    duration: .brickMinutes(minutes),
-                                    profileID: setupID
-                                )
+                                if isReverse {
+                                    try await controller.armReverse(profileID: setupID)
+                                } else {
+                                    try await controller.startSessionUsingKey(
+                                        duration: .brickMinutes(minutes),
+                                        profileID: setupID
+                                    )
+                                }
                             }
-                            if controller.activeSession != nil { dismiss() }
+                            if controller.activeSession != nil || controller.isArmed { dismiss() }
                         }
                     } label: {
                         Text(startButtonTitle)
@@ -132,13 +146,22 @@ struct StartSessionSheet: View {
         )
     }
 
+    private var isReverse: Bool { setup.mode == .reverse }
+
     private var startButtonTitle: String {
         switch controller.unlockMethod {
         case .brick:
-            return model.scanning ? "Hold near your brick" : "Tap your brick to start"
+            if model.scanning { return "Hold near your brick" }
+            return isReverse ? "Tap your brick to put it up" : "Tap your brick to start"
         case .biometric:
-            return "Start with \(controller.biometricName)"
+            return isReverse
+                ? "Put it up with \(controller.biometricName)"
+                : "Start with \(controller.biometricName)"
         }
+    }
+
+    private var standingNotice: String {
+        "It can't come down for the first \(Format.duration(setup.minimumDuration)). Openings are \(setup.permitAllowance) a day."
     }
 
     private var lockNotice: String {

@@ -22,6 +22,9 @@ targets:
     platform: iOS
     sources:
       - Brick
+      # Reverse mode makes the monitor apply a shield, not only clear one, so
+      # the decoding lives in a file both targets compile.
+      - Shared
     dependencies:
       - package: BrickKit
       - target: BrickMonitor
@@ -50,6 +53,7 @@ targets:
     platform: iOS
     sources:
       - BrickMonitor
+      - Shared
     dependencies:
       - package: BrickKit
     info:

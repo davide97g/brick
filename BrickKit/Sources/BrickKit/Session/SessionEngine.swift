@@ -68,7 +68,9 @@ public enum SessionEngine {
         now: Date
     ) throws -> Session {
         guard state.hasKey else { throw BrickError.notPaired }
+        guard profile.mode == .block else { throw BrickError.wrongMode }
         guard !profile.isEmpty else { throw BrickError.emptyBlocklist }
+        guard state.armedProfileID == nil else { throw BrickError.reverseArmed }
         guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
         guard duration >= .brickMinimumSession else {
             throw BrickError.durationTooShort(minimum: .brickMinimumSession)
@@ -208,6 +210,151 @@ public enum SessionEngine {
         case .wrongTag(let scanned, _):
             throw BrickError.wrongTag(scanned: scanned)
         }
+    }
+
+    // MARK: Reverse — standing shields and permits
+
+    /// Putting a reverse setup up. Nothing is scheduled: a standing shield has
+    /// no planned end, which is what "by default" means.
+    public static func validateArm(
+        state: BrickState,
+        profile: BlockProfile,
+        now: Date
+    ) throws {
+        guard state.hasKey else { throw BrickError.notPaired }
+        guard profile.mode == .reverse else { throw BrickError.wrongMode }
+        guard !profile.isEmpty else { throw BrickError.emptyBlocklist }
+        guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
+        guard state.armedProfileID == nil else { throw BrickError.reverseArmed }
+    }
+
+    public static func arm(
+        _ state: inout BrickState,
+        profile: BlockProfile,
+        at now: Date
+    ) {
+        state.armedProfileID = profile.id
+        state.armedAt = now
+    }
+
+    /// When taking the standing shield down becomes possible. Measured from
+    /// arming, by the same minimum a session uses: reverse mode would be a
+    /// toggle otherwise.
+    public static func disarmOpensAt(state: BrickState) -> Date? {
+        guard let profile = state.armedProfile, let armedAt = state.armedAt else { return nil }
+        return armedAt.addingTimeInterval(profile.minimumDuration)
+    }
+
+    /// Taking it down: the tag has to belong to the standing setup, and the
+    /// minimum has to have passed.
+    public static func validateDisarm(
+        state: BrickState,
+        scannedUID: String?,
+        now: Date
+    ) throws {
+        guard let profile = state.armedProfile else { throw BrickError.notArmed }
+        guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
+        if let scannedUID {
+            guard let tag = state.tag(withUID: scannedUID) else {
+                throw BrickError.wrongTag(scanned: scannedUID)
+            }
+            guard tag.profileID == profile.id else {
+                throw BrickError.wrongTag(scanned: scannedUID)
+            }
+        }
+        if let opensAt = disarmOpensAt(state: state), now < opensAt {
+            throw BrickError.tooEarlyToEnd(availableAt: opensAt)
+        }
+    }
+
+    public static func disarm(_ state: inout BrickState) {
+        state.armedProfileID = nil
+        state.armedAt = nil
+    }
+
+    /// A permit: the walk buys an open window instead of a shut one.
+    ///
+    /// There is no gate here — the cost was paid on the way to the tag, and a
+    /// permit that could not be spent would just be a shield with extra steps.
+    /// What limits it is the quota.
+    public static func validatePermit(
+        state: BrickState,
+        scannedUID: String?,
+        duration: TimeInterval? = nil,
+        spendingEmergency: Bool = false,
+        now: Date
+    ) throws -> Session {
+        guard let profile = state.armedProfile else { throw BrickError.notArmed }
+        guard state.activeSession?.isActive != true else { throw BrickError.sessionAlreadyActive }
+        if let scannedUID {
+            guard let tag = state.tag(withUID: scannedUID), tag.profileID == profile.id else {
+                throw BrickError.wrongTag(scanned: scannedUID)
+            }
+        }
+
+        if spendingEmergency {
+            guard state.emergency.hasAllowance(at: now) else {
+                throw BrickError.emergencyQuotaExhausted(
+                    replenishesAt: state.emergency.nextReplenishment(at: now)
+                )
+            }
+        } else {
+            guard state.permits.hasAllowance(
+                at: now, allowance: profile.permitAllowance, window: profile.permitWindow
+            ) else {
+                throw BrickError.permitQuotaExhausted(
+                    replenishesAt: state.permits.nextReplenishment(
+                        at: now, allowance: profile.permitAllowance, window: profile.permitWindow
+                    )
+                )
+            }
+        }
+
+        // The DeviceActivity floor applies in this direction too: there is no
+        // two-minute peek to be had.
+        let length = max(.brickMinimumSession, duration ?? profile.permitDuration)
+        return Session(
+            startedAt: now,
+            plannedEnd: now.addingTimeInterval(length),
+            kind: .permit,
+            profileID: profile.id,
+            startedByTag: scannedUID,
+            grantedByEmergency: spendingEmergency
+        )
+    }
+
+    /// Files the permit and spends whichever allowance paid for it.
+    public static func openPermit(_ state: inout BrickState, _ session: Session, at now: Date) {
+        state.activeSession = session
+        state.routeProgress = nil
+        if session.grantedByEmergency {
+            state.emergency.record(at: now)
+        } else if let profile = state.armedProfile {
+            state.permits.record(at: now, window: profile.permitWindow)
+        }
+    }
+
+    public static func permitsRemaining(state: BrickState, now: Date) -> Int? {
+        guard let profile = state.armedProfile else { return nil }
+        return state.permits.remainingAllowance(
+            at: now, allowance: profile.permitAllowance, window: profile.permitWindow
+        )
+    }
+
+    /// What the end of the running session has to do to the shield.
+    ///
+    /// A block session ends by clearing; a permit ends by putting the standing
+    /// shield back. The monitor extension asks this, because it runs out of
+    /// process with the app dead and no other way to know.
+    public static func expiryAction(state: BrickState) -> ExpiryAction {
+        guard let session = state.activeSession, session.isActive else { return .clear }
+        guard session.kind == .permit, let profile = state.armedProfile else { return .clear }
+        return .reapply(selectionData: profile.selectionData)
+    }
+
+    public enum ExpiryAction: Equatable, Sendable {
+        case clear
+        case reapply(selectionData: Data?)
     }
 
     // MARK: Ending by emergency

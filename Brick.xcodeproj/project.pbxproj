@@ -19,10 +19,12 @@
 		32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E57E55E0E97194D4FC2BA6 /* ManagedSettingsShielding.swift */; };
 		3B95D2353954E418E8BE0A39 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 30AFE8BD1B6BD6405B599985 /* PrivacyInfo.xcprivacy */; };
 		42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6BE8D2070A8B46D72CC95A /* HomeView.swift */; };
+		4355395D9F336B22D24FF46A /* SelectionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69BA899947F2126ECA9E620F /* SelectionShield.swift */; };
 		493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314D801CEB699B3A5390680C /* Formatting.swift */; };
 		4A1CEB4F016CDABD1012F418 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF7454390531E65A0034E9C /* Theme.swift */; };
 		55CC96D0F5983E65E631C1FA /* BrickShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 523903C198F90E96FB1F3B0D /* BrickShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5B9003343BBBA2E5B5B3263F /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 93FCBE8981D780CE782E4452 /* BrickKit */; };
+		66DE5EAD62AD596A801DE33D /* SelectionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69BA899947F2126ECA9E620F /* SelectionShield.swift */; };
 		891D7874528A5D436F6054AB /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = D287EBC760C29BEA09CCFDDB /* BrickKit */; };
 		8B5A2EE0E5221AFED443F9CF /* LocalAuthenticationBiometrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A77C1AC5FC357DC782BDA4A /* LocalAuthenticationBiometrics.swift */; };
 		A90FF1160C4B1231F1F6F36D /* CoreNFCTagWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */; };
@@ -95,6 +97,7 @@
 		523903C198F90E96FB1F3B0D /* BrickShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		647B9044D266DE53A1B48670 /* ExitRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExitRouteView.swift; sourceTree = "<group>"; };
 		68240CED27BF312A3C469E50 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		69BA899947F2126ECA9E620F /* SelectionShield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionShield.swift; sourceTree = "<group>"; };
 		6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6FC32462D272224C9B1450DD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		74A7AC56DEF3B09A88B449E6 /* BrickMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -169,6 +172,7 @@
 				D5049DDBFCA745A6646D8856 /* BrickMonitor */,
 				3D24EE956EEA5563F75150DF /* BrickShield */,
 				34D30A95CE6C3171C013472B /* Packages */,
+				FD1C8247B8FAAFC3FF1C48E4 /* Shared */,
 				2324578DF2E090B8BE18DA40 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -290,6 +294,14 @@
 				FD5932BD9E910D56AE681F7A /* Info.plist */,
 			);
 			path = BrickMonitor;
+			sourceTree = "<group>";
+		};
+		FD1C8247B8FAAFC3FF1C48E4 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				69BA899947F2126ECA9E620F /* SelectionShield.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -421,6 +433,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1B74EDD59FE78636B80995A9 /* BrickMonitorExtension.swift in Sources */,
+				4355395D9F336B22D24FF46A /* SelectionShield.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,6 +466,7 @@
 				32BB5C2995E12B3AB7AFFCA8 /* ManagedSettingsShielding.swift in Sources */,
 				E07583E54B6E8AFFC0D893E6 /* OnboardingView.swift in Sources */,
 				EDC1FF61C5BFA304E1E79CD6 /* RootView.swift in Sources */,
+				66DE5EAD62AD596A801DE33D /* SelectionShield.swift in Sources */,
 				F2B172C8B78388EAE2E408E9 /* SessionRing.swift in Sources */,
 				1EA01D0EBDCC8D40A7B92390 /* SettingsView.swift in Sources */,
 				D29EEE76FFCDE45736798EFE /* SetupDetailView.swift in Sources */,

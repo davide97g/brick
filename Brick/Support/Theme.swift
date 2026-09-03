@@ -19,6 +19,8 @@ enum Theme {
     static let ash = Color(hex: 0x9C9CA1)
     /// Unelapsed ticks, hairlines, disabled marks. Decorative only.
     static let graphite = Color(hex: 0x3A3A3E)
+    /// Graphite's opposite number: recessed marks on the paper field.
+    static let chalkline = Color(hex: 0xC7BEAE)
 
     /// Ink-side text on the paper card.
     static let inkOnPaper = Color(hex: 0x17171A)
@@ -28,6 +30,42 @@ enum Theme {
     static let oxide = Color(hex: 0xB4614F)
 
     static let cardRadius: CGFloat = 30
+}
+
+/// Which way round the instrument is.
+///
+/// Reverse mode inverts the two zones rather than introducing a colour: the
+/// palette has exactly one chromatic value and it is spoken for. Paper becomes
+/// the field, the machined surface becomes the card, and a glance says which
+/// world the phone is in before a word is read.
+struct Surface: Equatable {
+    let field: Color
+    let fieldText: Color
+    let fieldMuted: Color
+    let fieldRecessed: Color
+    let card: Color
+    let cardText: Color
+    let cardMuted: Color
+
+    static let standard = Surface(
+        field: Theme.ink,
+        fieldText: Theme.chalk,
+        fieldMuted: Theme.ash,
+        fieldRecessed: Theme.graphite,
+        card: Theme.paper,
+        cardText: Theme.inkOnPaper,
+        cardMuted: Theme.ashOnPaper
+    )
+
+    static let reversed = Surface(
+        field: Theme.paper,
+        fieldText: Theme.inkOnPaper,
+        fieldMuted: Theme.ashOnPaper,
+        fieldRecessed: Theme.chalkline,
+        card: Theme.ink,
+        cardText: Theme.chalk,
+        cardMuted: Theme.ash
+    )
 }
 
 extension Color {
@@ -68,6 +106,7 @@ extension View {
 /// The paper card docked at the bottom of every screen. Controls live here;
 /// state lives on the dark surface above it.
 struct PaperCard<Content: View>: View {
+    var surface: Surface = .standard
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -84,7 +123,7 @@ struct PaperCard<Content: View>: View {
                     topTrailingRadius: Theme.cardRadius,
                     style: .continuous
                 )
-                .fill(Theme.paper)
+                .fill(surface.card)
                 .ignoresSafeArea(edges: .bottom)
             }
     }
@@ -94,15 +133,16 @@ struct PaperCard<Content: View>: View {
 
 /// Filled pill, ink on paper. One per screen — the primary action.
 struct SolidPill: ButtonStyle {
+    var surface: Surface = .standard
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(isEnabled ? Theme.paper : Theme.ashOnPaper)
+            .foregroundStyle(isEnabled ? surface.card : surface.cardMuted)
             .frame(maxWidth: .infinity, minHeight: 54)
             .background(
-                Capsule().fill(isEnabled ? Theme.inkOnPaper : Theme.paperEdge)
+                Capsule().fill(isEnabled ? surface.cardText : surface.cardMuted.opacity(0.25))
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.spring(duration: 0.22), value: configuration.isPressed)

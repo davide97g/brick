@@ -15,6 +15,7 @@ struct SessionBezel: View {
     var caption: String
     /// The gate has been passed: the brick works now.
     var isOpen: Bool
+    var surface: Surface = .standard
 
     private let tickCount = 72
 
@@ -33,8 +34,8 @@ struct SessionBezel: View {
                     let length: CGFloat = isGate ? 22 : (isElapsed ? 13 : 9)
                     let width: CGFloat = isGate ? 2.5 : 1.5
                     let color: Color = isGate
-                        ? (isOpen ? Theme.chalk : Theme.ash)
-                        : (isElapsed ? Theme.chalk : Theme.graphite)
+                        ? (isOpen ? surface.fieldText : surface.fieldMuted)
+                        : (isElapsed ? surface.fieldText : surface.fieldRecessed)
 
                     let angle = Angle.degrees(Double(index) / Double(tickCount) * 360 - 90)
                     let outer = CGPoint(
@@ -60,10 +61,10 @@ struct SessionBezel: View {
             VStack(spacing: 10) {
                 Text(Format.countdown(remaining))
                     .readout(size: 52)
-                    .foregroundStyle(Theme.chalk)
+                    .foregroundStyle(surface.fieldText)
                     .contentTransition(.numericText())
                 Text(caption)
-                    .engraved()
+                    .engraved(surface.fieldMuted)
             }
             .padding(.horizontal, 58)
         }
