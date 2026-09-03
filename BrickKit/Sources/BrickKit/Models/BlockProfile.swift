@@ -49,7 +49,7 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
 
     public init(
         id: UUID = UUID(),
-        name: String = "Brick",
+        name: String = "Focus",
         selectionData: Data? = nil,
         appCount: Int = 0,
         categoryCount: Int = 0,
@@ -107,7 +107,7 @@ public struct BlockProfile: Codable, Equatable, Sendable, Identifiable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
-        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Brick"
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Focus"
         selectionData = try container.decodeIfPresent(Data.self, forKey: .selectionData)
         appCount = try container.decodeIfPresent(Int.self, forKey: .appCount) ?? 0
         categoryCount = try container.decodeIfPresent(Int.self, forKey: .categoryCount) ?? 0

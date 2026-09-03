@@ -325,6 +325,8 @@ public final class BrickController {
     /// Refused while its own session runs: the rules a session started under
     /// are the rules it ends under.
     public func removeProfile(id: UUID) throws {
+        guard state.profiles.count > 1 else { throw record(.lastProfile) }
+        if state.armedProfileID == id { throw record(.reverseArmed) }
         if let session = state.activeSession, session.isActive,
            SessionEngine.profile(for: session, in: state).id == id {
             throw record(.sessionAlreadyActive)

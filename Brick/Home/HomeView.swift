@@ -51,11 +51,17 @@ struct HomeView: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: settingsPreviewBinding) { SettingsView() }
+            .navigationDestination(isPresented: settingsBinding) { SettingsView() }
         }
         .task {
             #if DEBUG
             if model.uiPreview == "start" { startSheetShown = true }
+            // Everything but Home lives behind Settings, so the hooks open it
+            // the same way a tap does — including for the status bar.
+            if ["settings", "blocklist", "bricks", "setups", "brick", "route"]
+                .contains(model.uiPreview ?? "") {
+                model.settingsOpen = true
+            }
             #endif
         }
         .sheet(isPresented: $startSheetShown) {
@@ -70,16 +76,9 @@ struct HomeView: View {
         }
     }
 
-    private var settingsPreviewBinding: Binding<Bool> {
-        #if DEBUG
-        // "blocklist" lives one push deeper, so Settings has to open first.
-        Binding(get: {
-            ["settings", "blocklist", "bricks", "setups", "brick", "route"]
-                .contains(model.uiPreview ?? "")
-        }, set: { _ in })
-        #else
-        .constant(false)
-        #endif
+    private var settingsBinding: Binding<Bool> {
+        @Bindable var model = model
+        return $model.settingsOpen
     }
 
     // MARK: Chrome
@@ -91,8 +90,8 @@ struct HomeView: View {
 
             Spacer()
 
-            NavigationLink {
-                SettingsView()
+            Button {
+                model.settingsOpen = true
             } label: {
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 17, weight: .light))
@@ -188,7 +187,7 @@ struct HomeView: View {
 
     private var armedControls: some View {
         PaperCard(surface: surface) {
-            Text(controller.armedProfile.map { "\($0.name) is up." } ?? "Standing.")
+            Text(controller.armedProfile.map { "\($0.name) is standing." } ?? "Standing.")
                 .font(.system(size: 15))
                 .foregroundStyle(surface.cardMuted)
 
@@ -209,7 +208,16 @@ struct HomeView: View {
                 }
                 .font(.system(size: 14))
                 .foregroundStyle(controller.canDisarm ? surface.cardText : surface.cardMuted)
+                .frame(minHeight: 44)
+                .contentShape(.rect)
                 .disabled(!controller.canDisarm || model.scanning)
+
+                // The block path says when its gate opens; this one owes the
+                // same answer rather than a grey button with no reason.
+                if !controller.canDisarm, let opensAt = controller.disarmOpensAt {
+                    Text("it can come down at \(Format.clockTime(opensAt))")
+                        .engraved(surface.cardMuted)
+                }
             }
 
             if controller.permitsRemaining == 0 {

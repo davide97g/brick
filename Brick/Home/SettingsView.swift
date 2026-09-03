@@ -34,11 +34,9 @@ struct SettingsView: View {
                     Text(controller.unlockMethod == .brick ? "The brick" : controller.biometricName)
                         .foregroundStyle(Theme.ash)
                 } label: {
-                    Text("Way in and out").foregroundStyle(Theme.chalk)
+                    Text("Key").foregroundStyle(Theme.chalk)
                 }
 
-            } header: {
-                InkSectionHeader(text: sectionTitle)
             }
 
             Section {
@@ -62,15 +60,22 @@ struct SettingsView: View {
             if !controller.state.history.isEmpty {
                 Section {
                     ForEach(controller.state.history.reversed()) { session in
-                        HStack(alignment: .firstTextBaseline) {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
                                 .font(.system(size: 16, weight: .regular))
                                 .monospacedDigit()
                                 .foregroundStyle(Theme.chalk)
-                            Spacer()
+                            // With several setups, a bare duration doesn't say
+                            // what was blocked for it.
+                            Text(historyLabel(session))
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.ash)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
                             Text(Format.day(session.startedAt))
                                 .font(.system(size: 13))
                                 .foregroundStyle(Theme.ash)
+                                .lineLimit(1)
                         }
                     }
                 } header: {
@@ -130,28 +135,13 @@ struct SettingsView: View {
         }
     }
 
-    private var sectionTitle: String {
-        switch controller.state.tags.count {
-        case 0: return "Your setup"
-        case 1: return "Your brick"
-        default: return "Your bricks"
-        }
-    }
+    /// Both rows count the same way, so the pair reads as one thing rather
+    /// than two different kinds of answer.
+    private var setupsDetail: String { count(controller.state.profiles.count) }
+    private var bricksDetail: String { count(controller.state.tags.count) }
 
-    private var setupsDetail: String {
-        let count = controller.state.profiles.count
-        return count == 1
-            ? (controller.state.profiles[0].name.isEmpty ? "1" : controller.state.profiles[0].name)
-            : "\(count)"
-    }
-
-    private var bricksDetail: String {
-        let count = controller.state.tags.count
-        switch count {
-        case 0: return "None paired"
-        case 1: return controller.state.tags[0].displayName
-        default: return "\(count)"
-        }
+    private func count(_ value: Int) -> String {
+        value == 0 ? "None" : "\(value)"
     }
 
     /// Switching back means having a brick again: pair one if there is none.
@@ -163,6 +153,13 @@ struct SettingsView: View {
                 try await controller.pairBrick()
             }
         }
+    }
+
+    private func historyLabel(_ session: Session) -> String {
+        let name = controller.state.profile(id: session.profileID)?.name
+            ?? controller.state.profiles.first?.name
+            ?? ""
+        return session.kind == .permit ? "\(name), open" : name
     }
 
     private var keyFooter: String {

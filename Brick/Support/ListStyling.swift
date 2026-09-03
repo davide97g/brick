@@ -7,6 +7,10 @@ extension View {
         self
             .scrollContentBackground(.hidden)
             .background(Theme.ink)
+            // These screens are ink whichever way the home field is facing.
+            // `listRowBackground` alone was never doing this: the system's dark
+            // grouped background simply matched, which reverse mode exposed.
+            .environment(\.colorScheme, .dark)
             .listRowBackground(Theme.inkRaised)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)

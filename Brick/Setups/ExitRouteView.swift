@@ -91,7 +91,7 @@ struct ExitRouteView: View {
                 }
             }
         }
-        .inkList("Way out")
+        .inkList("The walk back")
         .toolbar {
             if setup.exitRoute.count > 1 {
                 EditButton().foregroundStyle(Theme.chalk)

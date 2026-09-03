@@ -75,8 +75,8 @@ struct StartSessionSheet: View {
                 PaperCard {
                     if controller.state.profiles.count > 1 { setupControl }
 
-                    if setup.minimumDuration > 0 {
-                        Text(isReverse ? standingNotice : lockNotice)
+                    if let notice = lockNotice {
+                        Text(notice)
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.ashOnPaper)
                             .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct StartSessionSheet: View {
     private var setupControl: some View {
         switch controller.unlockMethod {
         case .brick:
-            Text("The brick you tap decides which setup starts.")
+            Text("The brick you tap decides which setup starts, and its own minimum comes with it.")
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.ashOnPaper)
                 .multilineTextAlignment(.center)
@@ -164,7 +164,17 @@ struct StartSessionSheet: View {
         "It can't come down for the first \(Format.duration(setup.minimumDuration)). Openings are \(setup.permitAllowance) a day."
     }
 
-    private var lockNotice: String {
+    private var lockNotice: String? {
+        if isReverse {
+            return setup.minimumDuration > 0 ? standingNotice : nil
+        }
+        // With several setups the tag decides which rules apply, and the line
+        // above already says so — quoting one setup's minimum here would be a
+        // lie, and the product depends on these statements being facts.
+        if controller.unlockMethod == .brick && controller.state.profiles.count > 1 {
+            return nil
+        }
+        guard setup.minimumDuration > 0 else { return nil }
         let locked = min(setup.minimumDuration, .brickMinutes(minutes))
         let subject = controller.unlockMethod == .brick ? "The brick" : controller.biometricName
         return "\(subject) won't end this for the first \(Format.duration(locked))."

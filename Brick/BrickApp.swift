@@ -23,6 +23,9 @@ final class AppModel {
 
     var isAuthorized: Bool
     var scanning = false
+    /// Settings is ink even while the home field is paper, so the status bar
+    /// has to follow whichever is actually on screen.
+    var settingsOpen = false
 
     #if DEBUG
     /// Screenshot hook: `-uiPreview start|settings|setups|blocklist|route|bricks|brick`

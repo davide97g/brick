@@ -18,8 +18,8 @@ struct RootView: View {
         .animation(.snappy, value: model.needsSetup)
         // The status bar sits on the field, and reverse mode makes that field
         // paper. Set at the root, or the system keeps the dark bar over it.
-        .preferredColorScheme(model.controller.isArmed ? .light : .dark)
-        .tint(model.controller.isArmed ? Theme.inkOnPaper : Theme.chalk)
+        .preferredColorScheme(model.controller.isArmed && !model.settingsOpen ? .light : .dark)
+        .tint(Theme.chalk)
         .alert(item: $model.alert) { alert in
             Alert(title: Text(alert.title), message: alert.message.isEmpty ? nil : Text(alert.message))
         }

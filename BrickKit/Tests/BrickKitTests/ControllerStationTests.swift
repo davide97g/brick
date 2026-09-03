@@ -264,3 +264,28 @@ struct HouseholdTests {
         #expect(writer.writes == 1)
     }
 }
+
+@MainActor
+@Suite("Controller — setups cannot be emptied")
+struct ProfileFloorTests {
+
+    @Test("the last setup cannot be deleted: every screen points at one")
+    func lastProfileIsKept() {
+        let h = StationHarness()
+        try? h.controller.removeProfile(id: h.night.id)
+        #expect(throws: BrickError.lastProfile) {
+            try h.controller.removeProfile(id: h.work.id)
+        }
+        #expect(h.store.load().profiles.count == 1)
+    }
+
+    @Test("a standing setup cannot be deleted out from under its shield")
+    func armedProfileIsKept() async throws {
+        let h = StationHarness()
+        h.store.mutate { $0.armedProfileID = h.night.id; $0.armedAt = h.clock.now }
+        h.controller.reconcile()
+        #expect(throws: BrickError.reverseArmed) {
+            try h.controller.removeProfile(id: h.night.id)
+        }
+    }
+}

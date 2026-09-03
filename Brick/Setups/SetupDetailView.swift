@@ -66,7 +66,6 @@ struct SetupDetailView: View {
             Section {
                 TextField("Name", text: $name, prompt: Text("Deep work"))
                     .foregroundStyle(Theme.chalk)
-                    .onSubmit { rename() }
 
                 Button {
                     pickerShown = true
@@ -169,7 +168,7 @@ struct SetupDetailView: View {
                         LabeledContent {
                             Text(routeSummary).foregroundStyle(Theme.ash)
                         } label: {
-                            Text("Way out").foregroundStyle(Theme.chalk)
+                            Text("The walk back").foregroundStyle(Theme.chalk)
                         }
                     }
                 } footer: {
@@ -212,7 +211,10 @@ struct SetupDetailView: View {
             }
             loaded = true
         }
-        .onChange(of: name) { _, _ in rename() }
+        // Committed when the field is done rather than per keystroke: every
+        // write rewrites the state file both extensions read.
+        .onSubmit(rename)
+        .onDisappear(perform: rename)
     }
 
     private var routeSummary: String {
@@ -235,6 +237,7 @@ struct SetupDetailView: View {
     }
 
     private func rename() {
+        guard loaded, !name.isEmpty, name != setup.name else { return }
         var updated = setup
         updated.name = name
         controller.updateProfile(updated)

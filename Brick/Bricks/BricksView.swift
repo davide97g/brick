@@ -28,29 +28,20 @@ struct BricksView: View {
             }
 
             Section {
-                Button(model.scanning ? "Hold near the tag" : "Pair another") {
+                Button(model.scanning ? "Hold near the tag" : "Pair a brick") {
                     Task { await model.scan { try await controller.pairBrick() } }
                 }
                 .foregroundStyle(canPair ? Theme.chalk : Theme.graphite)
                 .disabled(!canPair)
-            } footer: {
-                Text(controller.activeSession != nil
-                     ? "You can't pair while a session is running."
-                     : "Any NFC tag works. A printed cover makes it something you can leave on a shelf.")
-                    .foregroundStyle(Theme.ash)
-            }
 
-            Section {
-                Button(model.scanning ? "Hold near the tag" : "Join a shared brick") {
+                Button("Join one someone else set up") {
                     Task { await model.scan { try await controller.pairBrick(writeIdentity: false) } }
                 }
-                .foregroundStyle(canPair ? Theme.chalk : Theme.graphite)
+                .font(.system(size: 15))
+                .foregroundStyle(canPair ? Theme.ash : Theme.graphite)
                 .disabled(!canPair)
-            } header: {
-                InkSectionHeader(text: "Shared")
             } footer: {
-                Text("Pairs a brick someone else already set up without writing to it. One object on the table, a phone each: every phone keeps its own setups, its own sessions and its own quota, and nothing is synced between them.")
-                    .foregroundStyle(Theme.ash)
+                Text(pairingFooter).foregroundStyle(Theme.ash)
             }
         }
         .inkList("Bricks")
@@ -58,6 +49,11 @@ struct BricksView: View {
 
     private var canPair: Bool {
         !model.scanning && controller.activeSession == nil
+    }
+
+    private var pairingFooter: String {
+        if controller.activeSession != nil { return "You can't pair while a session is running." }
+        return "Any NFC tag works, and a printed cover makes it something you can leave on a shelf. Joining reads a brick someone else already set up without writing to it: one object, a phone each, nothing synced."
     }
 
     private func row(_ brick: BrickTag) -> some View {
@@ -90,6 +86,7 @@ struct BrickDetailView: View {
     @State private var name = ""
     @State private var placeNote = ""
     @State private var loaded = false
+    @State private var unpairShown = false
 
     private var controller: BrickController { model.controller }
     private var brick: BrickTag? { controller.state.tag(withUID: uid) }
@@ -136,14 +133,7 @@ struct BrickDetailView: View {
             }
 
             Section {
-                Button("Unpair this brick") {
-                    do {
-                        try controller.unpairTag(uid: uid)
-                        dismiss()
-                    } catch {
-                        model.present(error)
-                    }
-                }
+                Button("Unpair this brick") { unpairShown = true }
                 .foregroundStyle(controller.activeSession != nil ? Theme.graphite : Theme.oxide)
                 .disabled(controller.activeSession != nil)
             } footer: {
@@ -159,14 +149,32 @@ struct BrickDetailView: View {
             placeNote = brick?.placeNote ?? ""
             loaded = true
         }
-        .onChange(of: name) { _, newValue in
-            guard loaded else { return }
-            controller.updateTag(uid: uid, name: newValue)
+        // Committed when the field is done rather than per keystroke: every
+        // write rewrites the state file both extensions read.
+        .onSubmit(commit)
+        .onDisappear(perform: commit)
+        .confirmationDialog(
+            "Unpair \(brick?.displayName ?? "this brick")?",
+            isPresented: $unpairShown,
+            titleVisibility: .visible
+        ) {
+            Button("Unpair", role: .destructive) {
+                do {
+                    try controller.unpairTag(uid: uid)
+                    dismiss()
+                } catch {
+                    model.present(error)
+                }
+            }
+            Button("Keep it", role: .cancel) {}
+        } message: {
+            Text("Pairing it again takes one tap. It leaves any walk it was part of.")
         }
-        .onChange(of: placeNote) { _, newValue in
-            guard loaded else { return }
-            controller.updateTag(uid: uid, placeNote: newValue)
-        }
+    }
+
+    private func commit() {
+        guard loaded else { return }
+        controller.updateTag(uid: uid, name: name, placeNote: placeNote)
     }
 
     private var setupBinding: Binding<UUID?> {

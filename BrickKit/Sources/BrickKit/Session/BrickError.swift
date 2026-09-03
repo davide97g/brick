@@ -16,6 +16,8 @@ public enum BrickError: Error, Equatable, Sendable {
     case reverseArmed
     case notArmed
     case wrongMode
+    /// Every screen points at a setup, so there is always at least one.
+    case lastProfile
     case permitQuotaExhausted(replenishesAt: Date?)
     case biometricUnavailable
     case biometricFailed
@@ -54,6 +56,8 @@ extension BrickError: LocalizedError {
             return "Nothing is standing."
         case .wrongMode:
             return "That setup doesn't work that way."
+        case .lastProfile:
+            return "Keep at least one setup."
         case .permitQuotaExhausted:
             return "No openings left today."
         case .biometricUnavailable:

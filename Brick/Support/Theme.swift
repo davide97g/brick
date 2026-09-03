@@ -139,10 +139,10 @@ struct SolidPill: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(isEnabled ? surface.card : surface.cardMuted)
+            .foregroundStyle(isEnabled ? surface.card : surface.cardText.opacity(0.55))
             .frame(maxWidth: .infinity, minHeight: 54)
             .background(
-                Capsule().fill(isEnabled ? surface.cardText : surface.cardMuted.opacity(0.25))
+                Capsule().fill(isEnabled ? surface.cardText : surface.cardText.opacity(0.10))
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.spring(duration: 0.22), value: configuration.isPressed)
