@@ -39,6 +39,19 @@ struct BricksView: View {
                      : "Any NFC tag works. A printed cover makes it something you can leave on a shelf.")
                     .foregroundStyle(Theme.ash)
             }
+
+            Section {
+                Button(model.scanning ? "Hold near the tag" : "Join a shared brick") {
+                    Task { await model.scan { try await controller.pairBrick(writeIdentity: false) } }
+                }
+                .foregroundStyle(canPair ? Theme.chalk : Theme.graphite)
+                .disabled(!canPair)
+            } header: {
+                InkSectionHeader(text: "Shared")
+            } footer: {
+                Text("Pairs a brick someone else already set up without writing to it. One object on the table, a phone each: every phone keeps its own setups, its own sessions and its own quota, and nothing is synced between them.")
+                    .foregroundStyle(Theme.ash)
+            }
         }
         .inkList("Bricks")
     }

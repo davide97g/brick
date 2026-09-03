@@ -208,3 +208,59 @@ struct ControllerStationTests {
         #expect(h.controller.keyDescription == "desk slab is on your desk.")
     }
 }
+
+@MainActor
+@Suite("Controller — a shared brick")
+struct HouseholdTests {
+
+    /// Joining someone else's brick must not touch the tag: the other phone's
+    /// identity is written on it, and this phone has no business rewriting it.
+    @Test("joining a shared brick pairs on the UID without writing to the tag")
+    func joiningWritesNothing() async throws {
+        final class RecordingWriter: TagWriting, @unchecked Sendable {
+            var writes = 0
+            func writeIdentity(_ id: UUID) async throws -> String {
+                writes += 1
+                return deskUID
+            }
+        }
+        let store = InMemoryStateStore(BrickState(profiles: [BlockProfile(appCount: 1)]))
+        let writer = RecordingWriter()
+        let controller = BrickController(
+            store: store,
+            shielding: RecordingShielding(),
+            scheduler: RecordingScheduler(),
+            tagReader: StubTagReader(uid: deskUID),
+            tagWriter: writer
+        )
+
+        try await controller.pairBrick(name: "table coaster", writeIdentity: false)
+
+        #expect(writer.writes == 0)
+        #expect(store.load().tags.first?.uid == deskUID)
+        #expect(store.load().tags.first?.name == "table coaster")
+    }
+
+    @Test("pairing normally still writes an identity")
+    func pairingWrites() async throws {
+        final class RecordingWriter: TagWriting, @unchecked Sendable {
+            var writes = 0
+            func writeIdentity(_ id: UUID) async throws -> String {
+                writes += 1
+                return deskUID
+            }
+        }
+        let store = InMemoryStateStore(BrickState(profiles: [BlockProfile(appCount: 1)]))
+        let writer = RecordingWriter()
+        let controller = BrickController(
+            store: store,
+            shielding: RecordingShielding(),
+            scheduler: RecordingScheduler(),
+            tagReader: StubTagReader(uid: deskUID),
+            tagWriter: writer
+        )
+
+        try await controller.pairBrick()
+        #expect(writer.writes == 1)
+    }
+}

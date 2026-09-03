@@ -185,11 +185,22 @@ public final class BrickController {
     /// Writes an identity onto the tag when a writer is available, and falls
     /// back to a plain read otherwise — a tag that is already locked, or a
     /// build without write support, still pairs on its UID.
-    public func pairBrick(name: String = "", placeNote: String = "", profileID: UUID? = nil) async throws {
+    ///
+    /// - Parameter writeIdentity: `false` pairs on the factory UID alone and
+    ///   leaves the tag's contents untouched. That is how a second phone joins
+    ///   a brick someone else already paired: one object, two phones, two
+    ///   unrelated sets of sessions, and no sync between them — the UID is
+    ///   public and unwritable, so nothing has to be shared to agree on it.
+    public func pairBrick(
+        name: String = "",
+        placeNote: String = "",
+        profileID: UUID? = nil,
+        writeIdentity: Bool = true
+    ) async throws {
         let identity = UUID()
         let uid: String
         var wroteIdentity = false
-        if let tagWriter {
+        if let tagWriter, writeIdentity {
             do {
                 uid = try await tagWriter.writeIdentity(identity)
                 wroteIdentity = true
