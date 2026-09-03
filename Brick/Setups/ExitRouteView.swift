@@ -9,6 +9,7 @@ import SwiftUI
 /// lets you out.
 struct ExitRouteView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     let setupID: UUID
 
     private var controller: BrickController { model.controller }
@@ -100,22 +101,35 @@ struct ExitRouteView: View {
     }
 
     private func step(index: Int, uid: String) -> some View {
-        HStack(spacing: 14) {
+        let brick = controller.state.tag(withUID: uid)
+        return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text("\(index + 1)")
                 .engraved(Theme.graphite)
                 .frame(width: 12, alignment: .leading)
-            Text(controller.state.tag(withUID: uid)?.displayName ?? "Missing brick")
-                .foregroundStyle(Theme.chalk)
-            Spacer()
-            Text(controller.state.tag(withUID: uid)?.placeNote ?? "")
-                .font(.footnote)
-                .foregroundStyle(Theme.ash)
+            // Name over place at accessibility sizes: side by side, both get
+            // hyphenated to nothing.
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(brick?.displayName ?? "Missing brick")
+                        .foregroundStyle(Theme.chalk)
+                    Text(brick?.placeNote ?? "")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.ash)
+                }
+            } else {
+                Text(brick?.displayName ?? "Missing brick")
+                    .foregroundStyle(Theme.chalk)
+                Spacer(minLength: 8)
+                Text(brick?.placeNote ?? "")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.ash)
+            }
         }
     }
 
     private var footer: String {
         if isRunning {
-            return "This setup is running. Its way out is fixed until the session ends."
+            return "This setup is running. Its walk back is fixed until the session ends."
         }
         switch setup.exitRoute.count {
         case 0:

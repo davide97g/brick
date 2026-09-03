@@ -17,9 +17,38 @@ struct SessionBezel: View {
     var isOpen: Bool
     var surface: Surface = .standard
 
+    /// Shrinks at accessibility text sizes: the readout inside it grows to a
+    /// ceiling, and a fixed 274 would push the controls off screen.
+    var size: CGFloat = 274
+    /// Drops the bezel entirely, leaving the readout.
+    var compact = false
+
     private let tickCount = 72
 
+    private var readoutStack: some View {
+        VStack(spacing: 10) {
+            Text(Format.countdown(remaining))
+                .readout(size: compact ? 44 : 52)
+                .foregroundStyle(surface.fieldText)
+                .contentTransition(.numericText())
+            Text(caption)
+                .engraved(surface.fieldMuted)
+        }
+    }
+
     var body: some View {
+        // Past a point the bezel is a frame around text that no longer fits in
+        // it. At accessibility sizes the readout stands on its own.
+        if compact {
+            readoutStack
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(Format.spokenRemaining(remaining)) remaining. \(caption).")
+        } else {
+            dial
+        }
+    }
+
+    private var dial: some View {
         ZStack {
             Canvas { context, size in
                 let radius = min(size.width, size.height) / 2
@@ -58,17 +87,11 @@ struct SessionBezel: View {
                 }
             }
 
-            VStack(spacing: 10) {
-                Text(Format.countdown(remaining))
-                    .readout(size: 52)
-                    .foregroundStyle(surface.fieldText)
-                    .contentTransition(.numericText())
-                Text(caption)
-                    .engraved(surface.fieldMuted)
-            }
-            .padding(.horizontal, 58)
+            readoutStack
+                .padding(.horizontal, 58)
         }
-        .frame(width: 274, height: 274)
+        .instrumentTypeSize()
+        .frame(width: size, height: size)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(Format.spokenRemaining(remaining)) remaining. \(caption).")
     }

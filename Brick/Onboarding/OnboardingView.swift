@@ -8,8 +8,19 @@ import SwiftUI
 /// the dark content swipes. Keeping the card in the page would slide a second
 /// copy of itself into view on every drag, and its bottom safe-area inset
 /// doesn't resolve correctly inside a paged container.
+extension AnyLayout {
+    /// A step reads as a row until the text needs the whole width.
+    static func stepLayout(stacked: Bool, @ViewBuilder content: () -> some View) -> some View {
+        let layout = stacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(spacing: 16))
+        return layout { content() }
+    }
+}
+
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var page = 0
 
     private static let pageCount = 4
@@ -115,10 +126,11 @@ struct OnboardingView: View {
         title: String,
         body: String
     ) -> some View {
+        CenteredScroll {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            if block {
+            if block, !typeSize.isAccessibilitySize {
                 BrickBlock(width: 200)
                     .padding(.bottom, 46)
             }
@@ -126,20 +138,25 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(eyebrow).engraved()
                 Text(title)
-                    .font(.system(size: 34, weight: .light))
+                    .brickText(34, weight: .light, relativeTo: .largeTitle)
+                    // Already 34pt: past a point it only costs the body text
+                    // the room it needs.
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .foregroundStyle(Theme.chalk)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(body)
-                    .font(.system(size: 16))
+                    .brickText(16)
                     .foregroundStyle(Theme.ash)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 30)
+            .padding(.vertical, 24)
 
             Spacer(minLength: 0)
+        }
         }
     }
 
@@ -148,6 +165,7 @@ struct OnboardingView: View {
             ZStack {
                 Theme.ink.ignoresSafeArea()
 
+                CenteredScroll {
                 VStack(spacing: 0) {
                     Spacer(minLength: 0)
 
@@ -187,7 +205,7 @@ struct OnboardingView: View {
                                 Button("No brick yet? Use \(controller.biometricName) instead.") {
                                     Task { await model.scan { try await controller.useBiometricUnlock() } }
                                 }
-                                .font(.system(size: 13))
+                                .brickText(13, relativeTo: .footnote)
                                 .foregroundStyle(Theme.ash)
                                 .underline()
                                 .padding(.leading, 42)
@@ -211,8 +229,29 @@ struct OnboardingView: View {
 
                     Spacer(minLength: 0)
                 }
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    @ScaledMetric(relativeTo: .caption) private var markerSize: CGFloat = 26
+    @ScaledMetric(relativeTo: .subheadline) private var actionHeight: CGFloat = 38
+
+    @ViewBuilder
+    private func marker(index: Int, done: Bool) -> some View {
+        if done {
+            Image(systemName: "checkmark")
+                .brickText(12, weight: .semibold, relativeTo: .caption)
+                .foregroundStyle(Theme.ink)
+                .frame(width: markerSize, height: markerSize)
+                .background(Circle().fill(Theme.chalk))
+        } else {
+            Text("\(index)")
+                .brickText(12, weight: .medium, relativeTo: .caption)
+                .foregroundStyle(Theme.ash)
+                .frame(width: markerSize, height: markerSize)
+                .background(Circle().strokeBorder(Theme.graphite, lineWidth: 1))
         }
     }
 
@@ -224,44 +263,33 @@ struct OnboardingView: View {
         enabled: Bool,
         @ViewBuilder action: () -> some View
     ) -> some View {
-        HStack(spacing: 16) {
-            Group {
-                if done {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Theme.ink)
-                        .frame(width: 26, height: 26)
-                        .background(Circle().fill(Theme.chalk))
-                } else {
-                    Text("\(index)")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.ash)
-                        .frame(width: 26, height: 26)
-                        .background(Circle().strokeBorder(Theme.graphite, lineWidth: 1))
-                }
-            }
-            .accessibilityHidden(true)
+        // Three columns stop being three columns at accessibility sizes: the
+        // title gets squeezed to a word a line. Stack them instead.
+        let stacked = typeSize.isAccessibilitySize
+        return AnyLayout.stepLayout(stacked: stacked) {
+            marker(index: index, done: done)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 16, weight: .regular))
+                    .brickText(16)
                     .foregroundStyle(Theme.chalk)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(detail)
-                    .font(.system(size: 13))
+                    .brickText(13, relativeTo: .footnote)
                     .foregroundStyle(Theme.ash)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
-
-            Spacer(minLength: 8)
 
             if !done {
                 action()
-                    .font(.system(size: 14, weight: .medium))
+                    .brickText(14, weight: .medium, relativeTo: .subheadline)
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 16)
-                    .frame(height: 38)
+                    .padding(.vertical, 8)
+                    .frame(minHeight: actionHeight)
                     .background(Capsule().fill(Theme.chalk))
                     .fixedSize()
             }

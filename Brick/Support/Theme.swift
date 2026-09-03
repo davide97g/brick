@@ -80,24 +80,79 @@ extension Color {
 
 // MARK: - Type
 
+/// A system font at a chosen size that still follows the reader's text-size
+/// setting. `Font.system(size:)` does not: it is fixed for ever, which is what
+/// every size in this app used to be.
+private struct ScaledFont: ViewModifier {
+    @ScaledMetric private var size: CGFloat
+    private let weight: Font.Weight
+
+    init(size: CGFloat, weight: Font.Weight, relativeTo style: Font.TextStyle) {
+        _size = ScaledMetric(wrappedValue: size, relativeTo: style)
+        self.weight = weight
+    }
+
+    func body(content: Content) -> some View {
+        content.font(.system(size: size, weight: weight))
+    }
+}
+
 extension View {
+    /// The app's text. Sizes stay hand-set — this is an instrument, and the
+    /// scale between labels is part of it — but they scale with the reader.
+    func brickText(
+        _ size: CGFloat,
+        weight: Font.Weight = .regular,
+        relativeTo style: Font.TextStyle = .body
+    ) -> some View {
+        modifier(ScaledFont(size: size, weight: weight, relativeTo: style))
+    }
+
     /// Engraved hardware label: small, wide-tracked, upper case.
     func engraved(_ color: Color = Theme.ash) -> some View {
         self
-            .font(.system(size: 11, weight: .medium))
+            .brickText(11, weight: .medium, relativeTo: .caption2)
             .tracking(2.4)
             .textCase(.uppercase)
+            .multilineTextAlignment(.center)
+            // Engraved labels wrap rather than truncate: a clipped one reads
+            // as a rendering fault, not as a smaller label.
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(color)
     }
 
     /// Instrument readout: thin, large, tabular so digits don't jitter.
+    ///
+    /// Scales, but only so far: these numerals start at 40-66pt and live in a
+    /// fixed bezel, so past a point growing them buys no legibility and only
+    /// breaks the dial. Callers clamp with `instrumentTypeSize()`.
     func readout(size: CGFloat) -> some View {
         self
-            .font(.system(size: size, weight: .ultraLight))
+            .brickText(size, weight: .ultraLight, relativeTo: .largeTitle)
             .monospacedDigit()
             .kerning(-1)
             .lineLimit(1)
             .minimumScaleFactor(0.5)
+    }
+
+    /// The ceiling for text inside the dial and the big readouts.
+    func instrumentTypeSize() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+}
+
+/// Content that centres when it fits and scrolls when it doesn't — which is
+/// what large text turns every full-height layout into.
+struct CenteredScroll<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                content.frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
     }
 }
 
@@ -134,18 +189,37 @@ struct PaperCard<Content: View>: View {
 /// Filled pill, ink on paper. One per screen — the primary action.
 struct SolidPill: ButtonStyle {
     var surface: Surface = .standard
-    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(isEnabled ? surface.card : surface.cardText.opacity(0.55))
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(
-                Capsule().fill(isEnabled ? surface.cardText : surface.cardText.opacity(0.10))
-            )
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(duration: 0.22), value: configuration.isPressed)
+        PillLabel(surface: surface, isPressed: configuration.isPressed) {
+            configuration.label
+        }
+    }
+
+    /// A view rather than inline styling, so the pill's height can scale with
+    /// the label instead of clipping it at large text sizes.
+    private struct PillLabel<Label: View>: View {
+        let surface: Surface
+        let isPressed: Bool
+        @ViewBuilder var label: Label
+
+        @Environment(\.isEnabled) private var isEnabled
+        @ScaledMetric(relativeTo: .body) private var minHeight: CGFloat = 54
+
+        var body: some View {
+            label
+                .brickText(16, weight: .medium)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(isEnabled ? surface.card : surface.cardText.opacity(0.55))
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, minHeight: minHeight)
+                .background(
+                    Capsule().fill(isEnabled ? surface.cardText : surface.cardText.opacity(0.10))
+                )
+                .scaleEffect(isPressed ? 0.97 : 1)
+                .animation(.spring(duration: 0.22), value: isPressed)
+        }
     }
 }
 

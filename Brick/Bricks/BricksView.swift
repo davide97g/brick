@@ -37,7 +37,7 @@ struct BricksView: View {
                 Button("Join one someone else set up") {
                     Task { await model.scan { try await controller.pairBrick(writeIdentity: false) } }
                 }
-                .font(.system(size: 15))
+                .brickText(15)
                 .foregroundStyle(canPair ? Theme.ash : Theme.graphite)
                 .disabled(!canPair)
             } footer: {

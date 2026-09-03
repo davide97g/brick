@@ -62,18 +62,18 @@ struct SettingsView: View {
                     ForEach(controller.state.history.reversed()) { session in
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
-                                .font(.system(size: 16, weight: .regular))
+                                .brickText(16)
                                 .monospacedDigit()
                                 .foregroundStyle(Theme.chalk)
                             // With several setups, a bare duration doesn't say
                             // what was blocked for it.
                             Text(historyLabel(session))
-                                .font(.system(size: 13))
+                                .brickText(13, relativeTo: .footnote)
                                 .foregroundStyle(Theme.ash)
                                 .lineLimit(1)
                             Spacer(minLength: 8)
                             Text(Format.day(session.startedAt))
-                                .font(.system(size: 13))
+                                .brickText(13, relativeTo: .footnote)
                                 .foregroundStyle(Theme.ash)
                                 .lineLimit(1)
                         }

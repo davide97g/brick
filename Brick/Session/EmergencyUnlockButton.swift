@@ -14,6 +14,7 @@ struct EmergencyUnlockButton: View {
     var surface: Surface = .standard
     var action: () -> Void
 
+    @ScaledMetric(relativeTo: .body) private var minHeight: CGFloat = 54
     @State private var progress: Double = 0
     @State private var holdTask: Task<Void, Never>?
 
@@ -22,28 +23,30 @@ struct EmergencyUnlockButton: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            ZStack {
-                Capsule().strokeBorder(surface.cardText.opacity(0.18), lineWidth: 1)
-
-                GeometryReader { proxy in
+            // The label sizes the pill; the shapes are backgrounds behind it.
+            // As a ZStack the capsules were greedy, and once the pill could
+            // grow with its label that greed became its height.
+            Text(progress > 0 ? holdingTitle : title)
+                .brickText(15, weight: .medium)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(fillHasReachedLabel ? Theme.paper : labelColor)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, minHeight: minHeight)
+                .background(alignment: .leading) {
                     Capsule()
                         .fill(Theme.oxide.opacity(0.9))
-                        .frame(width: proxy.size.width * progress)
+                        .scaleEffect(x: progress, y: 1, anchor: .leading)
                 }
+                .background(Capsule().strokeBorder(surface.cardText.opacity(0.18), lineWidth: 1))
                 .clipShape(Capsule())
-
-                Text(progress > 0 ? holdingTitle : title)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(fillHasReachedLabel ? Theme.paper : labelColor)
-            }
-            .frame(height: 54)
-            .contentShape(Capsule())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in beginHold() }
-                    .onEnded { _ in cancelHold() }
-            )
-            .disabled(isSpent)
+                .contentShape(Capsule())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in beginHold() }
+                        .onEnded { _ in cancelHold() }
+                )
+                .disabled(isSpent)
 
             Text(allowanceText)
                 .engraved(surface.cardMuted)

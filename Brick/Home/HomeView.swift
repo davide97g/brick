@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var startSheetShown = false
     @State private var tick = Date()
 
@@ -15,39 +16,23 @@ struct HomeView: View {
     /// else about the instrument changes.
     private var surface: Surface { controller.isArmed ? .reversed : .standard }
 
+    /// At accessibility text sizes the paper card needs the room more than the
+    /// dial does, so the instrument shrinks rather than the controls clipping.
+    private var instrumentSize: CGFloat { typeSize.isAccessibilitySize ? 176 : 274 }
+    private var objectWidth: CGFloat { typeSize.isAccessibilitySize ? 150 : 196 }
+
     var body: some View {
         NavigationStack {
             ZStack {
                 surface.field.ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    header
-
-                    if let warning = warningText {
-                        notice(warning.0, detail: warning.1)
-                    }
-
-                    Spacer(minLength: 0)
-
-                    if controller.isPermitRunning {
-                        permitInstrument
-                    } else if controller.activeSession != nil {
-                        instrument
-                    } else {
-                        object
-                    }
-
-                    Spacer(minLength: 0)
-
-                    if controller.isPermitRunning {
-                        permitControls
-                    } else if controller.activeSession != nil {
-                        runningControls
-                    } else if controller.isArmed {
-                        armedControls
-                    } else {
-                        idleControls
-                    }
+                // At accessibility text sizes the column is taller than the
+                // screen, so it scrolls rather than pushing the header off the
+                // top and the quota off the bottom.
+                if typeSize.isAccessibilitySize {
+                    CenteredScroll { column }
+                } else {
+                    column
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -81,12 +66,47 @@ struct HomeView: View {
         return $model.settingsOpen
     }
 
+    private var column: some View {
+        VStack(spacing: 0) {
+            header
+
+            if let warning = warningText {
+                notice(warning.0, detail: warning.1)
+            }
+
+            Spacer(minLength: 0)
+
+            if controller.isPermitRunning {
+                permitInstrument
+            } else if controller.activeSession != nil {
+                instrument
+            } else {
+                object
+            }
+
+            Spacer(minLength: 0)
+
+            if controller.isPermitRunning {
+                permitControls
+            } else if controller.activeSession != nil {
+                runningControls
+            } else if controller.isArmed {
+                armedControls
+            } else {
+                idleControls
+            }
+        }
+    }
+
     // MARK: Chrome
 
     private var header: some View {
         HStack {
             Text(headerTitle)
                 .engraved(surface.fieldText)
+                // Chrome, not content: it stops growing before it collides
+                // with the status bar.
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
 
             Spacer()
 
@@ -94,7 +114,7 @@ struct HomeView: View {
                 model.settingsOpen = true
             } label: {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 17, weight: .light))
+                    .brickText(17, weight: .light)
                     .foregroundStyle(surface.fieldMuted)
                     .frame(width: 44, height: 44)
                     .contentShape(.rect)
@@ -150,7 +170,9 @@ struct HomeView: View {
                 remaining: session.remaining(at: controller.now),
                 caption: "until \(Format.clockTime(session.plannedEnd))",
                 isOpen: controller.canEndWithKey,
-                surface: surface
+                surface: surface,
+                size: instrumentSize,
+                compact: typeSize.isAccessibilitySize
             )
             .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
         }
@@ -168,7 +190,9 @@ struct HomeView: View {
                 remaining: session.remaining(at: controller.now),
                 caption: "open until \(Format.clockTime(session.plannedEnd))",
                 isOpen: true,
-                surface: surface
+                surface: surface,
+                size: instrumentSize,
+                compact: typeSize.isAccessibilitySize
             )
             .animation(reduceMotion ? nil : .linear(duration: 1), value: tick)
         }
@@ -177,7 +201,7 @@ struct HomeView: View {
     private var permitControls: some View {
         PaperCard(surface: surface) {
             Text("It goes back up by itself.")
-                .font(.system(size: 15))
+                .brickText(15)
                 .foregroundStyle(surface.cardMuted)
 
             Button("Put it back now") { controller.closePermitEarly() }
@@ -188,7 +212,7 @@ struct HomeView: View {
     private var armedControls: some View {
         PaperCard(surface: surface) {
             Text(controller.armedProfile.map { "\($0.name) is standing." } ?? "Standing.")
-                .font(.system(size: 15))
+                .brickText(15)
                 .foregroundStyle(surface.cardMuted)
 
             VStack(spacing: 10) {
@@ -206,7 +230,7 @@ struct HomeView: View {
                 Button("Take it down") {
                     Task { await model.scan { try await controller.disarmReverse() } }
                 }
-                .font(.system(size: 14))
+                .brickText(14, relativeTo: .subheadline)
                 .foregroundStyle(controller.canDisarm ? surface.cardText : surface.cardMuted)
                 .frame(minHeight: 44)
                 .contentShape(.rect)
@@ -265,7 +289,7 @@ struct HomeView: View {
     private var runningControls: some View {
         PaperCard(surface: surface) {
             Text(controller.keyDescription)
-                .font(.system(size: 15))
+                .brickText(15)
                 .foregroundStyle(surface.cardMuted)
                 .multilineTextAlignment(.center)
 
@@ -329,11 +353,12 @@ struct HomeView: View {
 
     private var object: some View {
         VStack(spacing: 30) {
-            BrickBlock(width: 196)
+            BrickBlock(width: objectWidth)
 
             VStack(spacing: 8) {
                 Text(controller.isArmed ? "Blocked" : "Ready")
                     .readout(size: 40)
+                    .instrumentTypeSize()
                     .foregroundStyle(surface.fieldText)
                 Text(controller.activeProfile.summary)
                     .engraved(surface.fieldMuted)
@@ -358,12 +383,12 @@ struct HomeView: View {
                 .engraved(Theme.ashOnPaper)
             Spacer()
             Text(Format.duration(session.elapsed(at: session.endedAt ?? session.plannedEnd)))
-                .font(.system(size: 15, weight: .medium))
+                .brickText(15, weight: .medium)
                 .foregroundStyle(Theme.inkOnPaper)
             Text("·")
                 .foregroundStyle(Theme.ashOnPaper)
             Text(endedDescription(session))
-                .font(.system(size: 15))
+                .brickText(15)
                 .foregroundStyle(Theme.ashOnPaper)
         }
     }

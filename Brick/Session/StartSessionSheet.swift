@@ -43,6 +43,7 @@ struct StartSessionSheet: View {
                     VStack(spacing: 10) {
                         Text("Standing")
                             .readout(size: 56)
+                            .instrumentTypeSize()
                             .foregroundStyle(Theme.chalk)
                         Text("blocked until you tap")
                             .engraved()
@@ -51,6 +52,7 @@ struct StartSessionSheet: View {
                     VStack(spacing: 10) {
                         Text(Format.duration(.brickMinutes(minutes)))
                             .readout(size: 66)
+                            .instrumentTypeSize()
                             .foregroundStyle(Theme.chalk)
                             .contentTransition(.numericText())
 
@@ -77,7 +79,7 @@ struct StartSessionSheet: View {
 
                     if let notice = lockNotice {
                         Text(notice)
-                            .font(.system(size: 14))
+                            .brickText(14, relativeTo: .subheadline)
                             .foregroundStyle(Theme.ashOnPaper)
                             .multilineTextAlignment(.center)
                     }
@@ -117,7 +119,7 @@ struct StartSessionSheet: View {
         switch controller.unlockMethod {
         case .brick:
             Text("The brick you tap decides which setup starts, and its own minimum comes with it.")
-                .font(.system(size: 14))
+                .brickText(14, relativeTo: .subheadline)
                 .foregroundStyle(Theme.ashOnPaper)
                 .multilineTextAlignment(.center)
         case .biometric:
