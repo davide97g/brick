@@ -4,7 +4,7 @@ Working notes for Claude Code in this repo. Read before changing anything.
 
 ## What this is
 
-An iOS app paired with one 3D-printed NFC brick. Tapping the brick starts a session that applies real Screen Time restrictions; the brick is then left behind, so the only early way out is walking back to it — and only after a minimum duration. See `README.md` for the product reasoning.
+An iOS app paired with a set of 3D-printed NFC bricks. Tapping one starts a session that applies real Screen Time restrictions; the brick is then left behind, so the only early way out is walking back to it — and only after a minimum duration. A tag points at a *setup* (`BlockProfile`), so the bedside sticker can mean something different from the desk slab, and a setup can name an *exit route*: several tags to tap, in order, before a session ends early. A setup can also run in reverse — blocked by default, tapping buys a fixed open window. See `README.md` for the product reasoning and `docs/MULTI-TAG.md` for the design.
 
 ## Hard constraints
 
@@ -20,7 +20,9 @@ These are confirmed by experiment, not assumed. Don't re-litigate them.
   app with no printed brick is usable at all. It changes *who holds the key*, nothing else: the
   minimum duration, the emergency quota and the scheduled end are identical. Never present it as
   equivalent to the brick, and never make it the default.
-- **`ApplicationToken`s are opaque.** The app cannot see which apps the user picked, and nothing should be written that assumes it can.
+- **`ApplicationToken`s are opaque.** The app cannot see which apps the user picked, and nothing should be written that assumes it can. This is also why a permit cannot be partial: one app cannot be lifted out of a selection.
+- **One shield at a time.** One `ManagedSettingsStore`, one `DeviceActivityName`, so one running thing. Setups decide *what* the single session blocks; they do not run concurrently, and a block session is refused while a reverse setup is standing.
+- **The 15-minute floor applies in both directions.** A permit is a `DeviceActivitySchedule` too, so there is no two-minute peek to be had.
 
 ## Commands
 
@@ -52,27 +54,43 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
 8. **Never leave a shield up without a scheduled way down.** `startSession` rolls the shield back if scheduling throws. Preserve that ordering.
 
 9. **The gate is one rule, not two.** `SessionEngine.validateEnd` owns "has the minimum passed";
-   `validateTapEnd` adds the UID check on top of it. A new way out adds an *identity* check and
-   calls `validateEnd` — it never re-implements the gate.
+   the route check adds identity on top of it. A new way out adds an *identity* check and
+   calls `validateEnd` — it never re-implements the gate. An unpaired tag is refused on identity
+   before the gate, because that answer is true whatever the clock says; everything about the
+   *exit*, including route progress, sits behind the gate.
+
+10. **Reverse mirrors rule 8: never lift a shield without a scheduled way back.** `grantPermit`
+    files the permit and schedules its return *before* clearing, and rolls both back if
+    scheduling throws. `SessionEngine.expiryAction` is the single answer to "does this ending
+    clear the shield or re-apply it", and the monitor extension, `reconcile()` and the tick all
+    ask it rather than deciding for themselves.
+
+11. **`Shared/` is compiled into the app *and* `BrickMonitor`.** Reverse mode makes the extension
+    apply a shield, not only clear one, so `SelectionCoder` and `SelectionShield` live there.
+    It is the one place FamilyControls code is shared without going through BrickKit.
 
 ## Gotchas
 
 - **`project.yml` is the source of truth.** `Brick.xcodeproj` is generated and committed for convenience; edits made in Xcode's project editor are lost on the next `xcodegen generate`.
 - **xcodegen overwrites extension `Info.plist` files.** Declare `NSExtension` under `info.properties` in `project.yml`, never by hand-writing the plist — it will be silently replaced and the extension will fail to load with no error.
 - **App Group containers work in the Simulator**, so `FileStateStore.shared()` succeeds there. The Documents fallback in `AppEnvironment` is for builds without the entitlement.
-- **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (app target) is the only encoder/decoder. `BlocklistConfig` caches the counts so the UI can describe a selection without decoding it.
+- **`FamilyActivitySelection` is stored as `Data`.** `SelectionCoder` (in `Shared/`) is the only encoder/decoder. `BlockProfile` caches the counts so the UI can describe a selection without decoding it. `BlocklistConfig` is a typealias for `BlockProfile`, kept while call sites migrate.
 - **Screen Time access can be revoked from Settings mid-session**, silently invalidating tokens. `reapplyShieldIfNeeded()` repairs it on foreground and reports failure; the UI shows a banner rather than letting the countdown lie.
 - **Extension code runs out of process under tight time and memory limits.** Keep `BrickMonitor` trivial.
 - **`BrickState` decodes field by field.** `load()` swallows any decode error and returns an
   empty state, so one new non-optional field would silently unpair every existing user. Add
-  fields to `init(from:)` with `decodeIfPresent` and a default; `StateStoreTests` guards it.
+  fields to `init(from:)` with `decodeIfPresent` and a default. `StateMigrationTests` pins the
+  shipped file shape — a single `tag` and a single `blocklist` — byte for byte, including a
+  session that was running when the update landed. Those legacy keys are read and never written
+  back: one migration, at the first load.
 - **Store submission state lives in `store/`.** `SUBMISSION.md` is the running record of what is done, blocked and unverified; `METADATA.md` holds the listing copy and review notes. Update them when any of it changes.
 - **Don't put persistent chrome inside a paged `TabView`.** A `PaperCard` placed in each page slides a second copy of itself into view on every swipe, and its bottom safe-area inset doesn't resolve, so it renders cropped. Keep the card and the dots outside the `TabView`; only content pages swipe.
 - **App Review has no brick, and may have no enrolled face.** `DemoTagAccess` +
   `SwitchingTagReader`/`SwitchingTagWriter`/`SwitchingBiometrics` swap in the pretend tag *and*
   the pretend prompt on device when the code in `store/METADATA.md` is entered under
   Settings → App Review. It must stay visible in the UI while on: an app that silently stopped needing the object would be lying about what it is.
-- **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview onboard<N>` exists so all four can be.
+- **Verify every page, not the first one.** The onboarding card bug survived a screenshot pass because only page 0 was captured. `-uiPreview` covers the screens behind a tap: `start`, `settings`, `setups`, `blocklist` (the first setup), `route`, `bricks`, `brick`, `onboard<N>`.
+- **Reverse mode inverts the two zones rather than adding a colour.** `Surface.standard` / `Surface.reversed` in `Theme.swift`; the root's `preferredColorScheme` follows, or the status bar stays white on paper.
 
 ## Tests
 

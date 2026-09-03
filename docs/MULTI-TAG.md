@@ -1,6 +1,8 @@
 # Many tags, routes, households, and the reverse
 
-A design for the next version of the product. Nothing here is built yet.
+The design of the current version. Everything below is built, tested in
+`BrickKit` and verified by screenshot in the Simulator; nothing has been
+exercised on a device.
 
 Four changes, one foundation. The foundation is that a brick stops being *the*
 brick: the app pairs a set of tags, and a tag points at a profile that says what

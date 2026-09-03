@@ -2,7 +2,7 @@
 
 # Brick
 
-**A single physical object that blocks apps on your iPhone until you go back to it.**
+**Physical objects that block apps on your iPhone until you go back to them.**
 
 Swift · SwiftUI · Screen Time APIs · Core NFC · no backend, no account, no network code
 
@@ -16,7 +16,9 @@ Blocking apps is free. Screen Time does it, Focus does it, a dozen App Store blo
 
 Brick moves the cost of unblocking out of your head and into the world.
 
-You keep one 3D-printed brick where you work. Tapping it starts a session and applies real Screen Time restrictions. Then you leave — without the brick. Getting your apps back early means physically walking back to the object, and only after the minimum duration you set. Every session also has a planned end that clears itself, so a forgotten brick can never strand you.
+You keep a 3D-printed brick where you work. Tapping it starts a session and applies real Screen Time restrictions. Then you leave — without the brick. Getting your apps back early means physically walking back to the object, and only after the minimum duration you set. Every session also has a planned end that clears itself, so a forgotten brick can never strand you.
+
+Pair more than one and each becomes a station: the bedside sticker starts a different setup from the desk slab. A setup can make the way out a *walk* — desk, then hallway, then the front door, in order — or run in reverse, where the phone is blocked by default and tapping the brick buys a fixed open window that closes by itself.
 
 Instant to enter. Expensive to leave. That asymmetry is the whole product.
 
@@ -61,7 +63,8 @@ is a separate grant that Apple makes only on request, so uploading a build is st
 | Face ID as a stand-in key | Built and tested; the prompt itself is unverified on device |
 | App Store archive | Clean; export blocked on Family Controls (Distribution) |
 | Store metadata, privacy policy | Drafted in `store/` |
-| Hardware | Not started |
+| Stations, exit routes, reverse mode | Built and tested in `BrickKit`; screens verified in the Simulator |
+| Hardware | Parametric covers in `hardware/`, nothing printed |
 
 ## How a session works
 
