@@ -1,6 +1,6 @@
 # Submission state
 
-What is done, what is blocked, and what is unverified. Updated 2 September 2026.
+What is done, what is blocked, and what is unverified. Updated 3 September 2026.
 
 ## Done and observed
 
@@ -87,6 +87,34 @@ The code is in the review notes in `store/METADATA.md`.
 
 The code being public in this repository costs nothing: anyone wanting out of a session can
 already delete the app, which onboarding states plainly.
+
+## Rejected: 1.0 (2), 2.5.1, automated Family Controls check
+
+App Review rejected build 1.0 (2) on 2 September 2026 with an automated message: the app "uses
+one or more Screen Time APIs but the app has not been submitted with the Family Controls
+entitlement". No human review took place.
+
+The binary is not the problem. Re-exported on 3 September 2026 and inspected with
+`codesign -d --entitlements`:
+
+- `Brick.app`, `BrickMonitor.appex` and `BrickShield.appex` each carry
+  `com.apple.developer.family-controls = true`, with `get-task-allow = false` and
+  `beta-reports-active = true` — a real App Store signature.
+- Each is signed with its own "iOS Team Store Provisioning Profile", and all three profiles carry
+  the entitlement; they expire 2 September 2027.
+
+The portal is not the problem either. Checked on 3 September 2026: all three App IDs
+(`com.davideghiotto.brick`, `.monitor`, `.shield`) show Family Controls as **Assigned** under
+Additional Capabilities. The request that failed with a 503 on approval day left no gap.
+
+So the grant is in place, the entitlement is in every bundle, and the check still fired. Nothing
+on this side to change — it is Apple's automated scan reaching the wrong conclusion.
+
+Next:
+
+- Reply in Resolution Center with the evidence above — draft in `store/REVIEW-REPLY.md`.
+- Only if Apple asks for one: bump `CURRENT_PROJECT_VERSION` to 3 and upload again. A build
+  number cannot be reused.
 
 ## Name
 

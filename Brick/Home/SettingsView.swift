@@ -120,6 +120,9 @@ struct SettingsView: View {
         }
         .navigationDestination(isPresented: bricksPreviewBinding) { BricksView() }
         .navigationDestination(isPresented: preview("setups")) { SetupsView() }
+        .navigationDestination(isPresented: preview("route")) {
+            ExitRouteView(setupID: controller.defaultProfile().id)
+        }
         .navigationDestination(isPresented: preview("brick")) {
             if let first = controller.state.tags.first {
                 BrickDetailView(uid: first.uid)

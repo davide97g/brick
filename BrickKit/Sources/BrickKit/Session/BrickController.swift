@@ -68,27 +68,15 @@ public final class BrickController {
     }
 
     /// The walk still owed before this session can end early.
-    public var exitRoute: [BrickTag] {
-        guard let session = state.activeSession else { return [] }
-        return SessionEngine.exitRoute(for: session, in: state)
-            .compactMap { state.tag(withUID: $0) }
+    public var routeStatus: RouteStatus? {
+        SessionEngine.routeStatus(state: state, now: now)
     }
 
-    public var routeStepsWalked: Int {
-        guard let session = state.activeSession,
-              let progress = state.routeProgress,
-              progress.sessionID == session.id,
-              !progress.isStale(window: activeProfile.routeWindow, at: now)
-        else { return 0 }
-        return progress.stepsDone
-    }
+    public var exitRoute: [BrickTag] { routeStatus?.steps ?? [] }
+    public var routeStepsWalked: Int { routeStatus?.walked ?? 0 }
 
     /// Where to go next. `nil` when nothing is running.
-    public var nextRouteTag: BrickTag? {
-        let route = exitRoute
-        guard !route.isEmpty else { return nil }
-        return route[min(routeStepsWalked, route.count - 1)]
-    }
+    public var nextRouteTag: BrickTag? { routeStatus?.next }
 
     public var emergencyRemaining: Int { state.emergency.remainingAllowance(at: now) }
 
@@ -110,7 +98,7 @@ public final class BrickController {
     /// thing, from the state file alone.
     public var keyDescription: String {
         switch state.unlock {
-        case .brick: return nextRouteTag?.whereItIs ?? state.tag?.whereItIs
+        case .brick: return routeStatus?.description ?? state.tag?.whereItIs
             ?? "Your brick has the way out."
         case .biometric: return "No brick. \(biometrics.name) is the way out."
         }

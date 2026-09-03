@@ -197,6 +197,14 @@ struct ControllerStationTests {
         try await h.controller.startSessionByTap(duration: .brickMinutes(90))
         h.clock.advance(by: .brickMinutes(30))
         _ = try await h.controller.endSessionByTap()
-        #expect(h.controller.keyDescription == "hallway sticker is by the front door.")
+        #expect(h.controller.keyDescription == "1 tap left. Next: hallway sticker, by the front door.")
+    }
+
+    @Test("a one-tap exit still just says where the brick is")
+    func keyDescriptionForASingleTap() async throws {
+        let h = StationHarness()
+        h.controller.updateTag(uid: deskUID, placeNote: "on your desk")
+        try await h.controller.startSessionByTap(duration: .brickMinutes(90))
+        #expect(h.controller.keyDescription == "desk slab is on your desk.")
     }
 }

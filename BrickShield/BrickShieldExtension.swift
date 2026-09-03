@@ -36,8 +36,9 @@ class BrickShieldExtension: ShieldConfigurationDataSource {
 
     private func brickShield() -> ShieldConfiguration {
         let state = FileStateStore.shared()?.load()
+        let now = Date()
         let session = state?.activeSession
-        let remaining = session?.remaining(at: Date()) ?? 0
+        let remaining = session?.remaining(at: now) ?? 0
 
         return ShieldConfiguration(
             backgroundBlurStyle: .systemUltraThinMaterialDark,
@@ -48,7 +49,7 @@ class BrickShieldExtension: ShieldConfigurationDataSource {
                 color: .white
             ),
             subtitle: ShieldConfiguration.Label(
-                text: ShieldCopy.wayOut(state),
+                text: ShieldCopy.wayOut(state, now: now),
                 color: UIColor.white.withAlphaComponent(0.7)
             )
         )
@@ -58,11 +59,18 @@ class BrickShieldExtension: ShieldConfigurationDataSource {
 enum ShieldCopy {
     /// The extension can't ask which biometry this phone has, so the biometric
     /// line names none — it points at the app, where the real prompt lives.
-    static func wayOut(_ state: BrickState?) -> String {
+    static func wayOut(_ state: BrickState?, now: Date = Date()) -> String {
         guard let state else { return "Your brick has the way out." }
         switch state.unlock {
-        case .brick: return state.tag?.whereItIs ?? "Your brick has the way out."
-        case .biometric: return "Unlock in Brick, once the gate opens."
+        case .brick:
+            // The same rules the app reads, from the same file: a route says
+            // how many taps are left and which brick is next, a lone brick
+            // just says where it is.
+            return SessionEngine.routeStatus(state: state, now: now)?.description
+                ?? state.tag?.whereItIs
+                ?? "Your brick has the way out."
+        case .biometric:
+            return "Unlock in Brick, once the gate opens."
         }
     }
 

@@ -112,6 +112,18 @@ public enum SessionEngine {
         return []
     }
 
+    /// The walk as it stands: the tags, in order, and how many are behind you.
+    public static func routeStatus(state: BrickState, now: Date) -> RouteStatus? {
+        guard let session = state.activeSession, session.isActive else { return nil }
+        let steps = exitRoute(for: session, in: state).compactMap { state.tag(withUID: $0) }
+        guard !steps.isEmpty else { return nil }
+        let window = profile(for: session, in: state).routeWindow
+        return RouteStatus(
+            steps: steps,
+            walked: stepsAlreadyWalked(state: state, session: session, window: window, now: now)
+        )
+    }
+
     /// A tag tap against the exit route.
     ///
     /// Order matters and is the rule: a tag that was never paired is refused

@@ -27,6 +27,7 @@
 		8B5A2EE0E5221AFED443F9CF /* LocalAuthenticationBiometrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A77C1AC5FC357DC782BDA4A /* LocalAuthenticationBiometrics.swift */; };
 		A90FF1160C4B1231F1F6F36D /* CoreNFCTagWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A23EB67706F2A3EB2D6FBF /* CoreNFCTagWriter.swift */; };
 		AB79BB1AF60BD992E133F9A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85AD41481B81CFEAF0DB6C6D /* Assets.xcassets */; };
+		AD87A8A76547A402D2B0874B /* ExitRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647B9044D266DE53A1B48670 /* ExitRouteView.swift */; };
 		BBD1B191D4C7B64B95195065 /* BrickKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81391C961605212FB6128E92 /* BrickKit */; };
 		BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEAE041CD91BE708D875220 /* ListStyling.swift */; };
 		BFE37464F6C3EC6ED1E4BDD6 /* SetupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C4EBC4D22F69B322340324 /* SetupsView.swift */; };
@@ -92,6 +93,7 @@
 		4C56EFDBCDF7146197422B0D /* SessionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRing.swift; sourceTree = "<group>"; };
 		507FED4EC3F849D1C4CC81D2 /* UserNotificationsNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationsNotifier.swift; sourceTree = "<group>"; };
 		523903C198F90E96FB1F3B0D /* BrickShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BrickShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		647B9044D266DE53A1B48670 /* ExitRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExitRouteView.swift; sourceTree = "<group>"; };
 		68240CED27BF312A3C469E50 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		6A3AA98D7EB5F0892CB06950 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6FC32462D272224C9B1450DD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 		5C98755AF214AA7CC28D53D4 /* Setups */ = {
 			isa = PBXGroup;
 			children = (
+				647B9044D266DE53A1B48670 /* ExitRouteView.swift */,
 				448FDD1B7A534764D501642D /* SetupDetailView.swift */,
 				31C4EBC4D22F69B322340324 /* SetupsView.swift */,
 			);
@@ -442,6 +445,7 @@
 				D4FB1D70F137CCD6F42A6F6B /* DemoTag.swift in Sources */,
 				2E9A07AAA2172C3B07C58707 /* DeviceActivityScheduler.swift in Sources */,
 				220C39EE646B11B496F01F4E /* EmergencyUnlockButton.swift in Sources */,
+				AD87A8A76547A402D2B0874B /* ExitRouteView.swift in Sources */,
 				493603400BEBA0D4A90C65A1 /* Formatting.swift in Sources */,
 				42107F23DD45FD95047AD1EA /* HomeView.swift in Sources */,
 				BF4A447BF14673A4097789DC /* ListStyling.swift in Sources */,

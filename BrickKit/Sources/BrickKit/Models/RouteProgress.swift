@@ -23,6 +23,40 @@ public struct RouteProgress: Codable, Equatable, Sendable {
     }
 }
 
+/// Where the walk stands right now, resolved to the tags themselves.
+///
+/// The app and the shield both describe the way out, from the same state file
+/// and the same rules, so they cannot drift apart.
+public struct RouteStatus: Equatable, Sendable {
+    public let steps: [BrickTag]
+    public let walked: Int
+
+    public init(steps: [BrickTag], walked: Int) {
+        self.steps = steps
+        self.walked = walked
+    }
+
+    public var isSingleTap: Bool { steps.count <= 1 }
+    public var remaining: Int { max(0, steps.count - walked) }
+
+    /// The tag to go to. The last one when the walk is somehow past its end,
+    /// so this is never nil for a route that has steps.
+    public var next: BrickTag? {
+        guard !steps.isEmpty else { return nil }
+        return steps[min(walked, steps.count - 1)]
+    }
+
+    /// "2 taps left. Next: hallway sticker, by the front door."
+    public var description: String? {
+        guard let next else { return nil }
+        guard !isSingleTap else { return next.whereItIs }
+        let taps = "\(remaining) tap\(remaining == 1 ? "" : "s") left."
+        return next.placeNote.isEmpty
+            ? "\(taps) Next: \(next.displayName)."
+            : "\(taps) Next: \(next.displayName), \(next.placeNote)."
+    }
+}
+
 /// What a tag tap did to an exit route.
 ///
 /// A wrong tag is an outcome rather than a thrown error because it has a

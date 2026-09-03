@@ -25,7 +25,7 @@ final class AppModel {
     var scanning = false
 
     #if DEBUG
-    /// Screenshot hook: `-uiPreview start|settings|setups|blocklist|bricks|brick`
+    /// Screenshot hook: `-uiPreview start|settings|setups|blocklist|route|bricks|brick`
     /// opens that screen
     /// at launch, so screens behind a tap can be captured from the CLI.
     let uiPreview: String? = {
@@ -141,6 +141,8 @@ struct AlertContent: Identifiable {
             }
         case .wrongTag:
             message = "That tag isn't the brick you paired."
+        case .routeIncomplete:
+            message = "Keep going. Tapping the wrong brick starts the walk again."
         case .emptyBlocklist:
             message = "Choose the apps and sites this brick should block."
         default:

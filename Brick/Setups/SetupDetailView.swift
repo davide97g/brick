@@ -90,6 +90,20 @@ struct SetupDetailView: View {
             }
 
             Section {
+                NavigationLink {
+                    ExitRouteView(setupID: setupID)
+                } label: {
+                    LabeledContent {
+                        Text(routeSummary).foregroundStyle(Theme.ash)
+                    } label: {
+                        Text("Way out").foregroundStyle(Theme.chalk)
+                    }
+                }
+            } footer: {
+                Text(routeFooter).foregroundStyle(Theme.ash)
+            }
+
+            Section {
                 if bricks.isEmpty {
                     Text("No brick starts this one yet.")
                         .foregroundStyle(Theme.ash)
@@ -125,6 +139,25 @@ struct SetupDetailView: View {
             loaded = true
         }
         .onChange(of: name) { _, _ in rename() }
+    }
+
+    private var routeSummary: String {
+        switch setup.exitRoute.count {
+        case 0: return "The brick that started it"
+        case 1: return controller.state.tag(withUID: setup.exitRoute[0])?.displayName ?? "1 tap"
+        default: return "\(setup.exitRoute.count) taps"
+        }
+    }
+
+    private var routeFooter: String {
+        switch setup.exitRoute.count {
+        case 0:
+            return "Ending early means tapping the brick you started with. Add steps to make it a walk instead — including a different brick from the one that started it."
+        case 1:
+            return "Ending early means tapping this brick, wherever it is."
+        default:
+            return "Tap them in this order. A wrong tag, or a pause longer than the window, starts the walk again."
+        }
     }
 
     private func rename() {

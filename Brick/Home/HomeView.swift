@@ -64,7 +64,8 @@ struct HomeView: View {
         #if DEBUG
         // "blocklist" lives one push deeper, so Settings has to open first.
         Binding(get: {
-            ["settings", "blocklist", "bricks", "setups", "brick"].contains(model.uiPreview ?? "")
+            ["settings", "blocklist", "bricks", "setups", "brick", "route"]
+                .contains(model.uiPreview ?? "")
         }, set: { _ in })
         #else
         .constant(false)
@@ -158,6 +159,9 @@ struct HomeView: View {
                 if !controller.canEndWithKey, let opensAt = controller.keyExitOpensAt {
                     Text(gateText(opensAt))
                         .engraved(Theme.ashOnPaper)
+                } else if let route = controller.routeStatus, !route.isSingleTap {
+                    Text("\(route.walked) of \(route.steps.count) taps done")
+                        .engraved(Theme.ashOnPaper)
                 }
             }
 
@@ -171,7 +175,11 @@ struct HomeView: View {
         guard controller.canEndWithKey else { return "Locked" }
         switch controller.unlockMethod {
         case .brick:
-            return model.scanning ? "Hold near your brick" : "Tap your brick to end"
+            if model.scanning { return "Hold near your brick" }
+            if let route = controller.routeStatus, !route.isSingleTap, let next = route.next {
+                return "Tap \(next.displayName)"
+            }
+            return "Tap your brick to end"
         case .biometric:
             return "End with \(controller.biometricName)"
         }
