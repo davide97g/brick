@@ -1,6 +1,6 @@
 # Submission state
 
-What is done, what is blocked, and what is unverified. Updated 3 September 2026.
+What is done, what is blocked, and what is unverified. Updated 4 September 2026.
 
 ## Done and observed
 
@@ -88,6 +88,28 @@ The code is in the review notes in `store/METADATA.md`.
 The code being public in this repository costs nothing: anyone wanting out of a session can
 already delete the app, which onboarding states plainly.
 
+## Open: Guideline 1.3, Kids Category information request
+
+App Review sent an automated 1.3 message on 4 September 2026 asking the four standard Kids
+Category questions (third-party analytics, third-party advertising, sharing with third parties,
+any other data collection). All four answers are "no", and the answers are checkable rather than
+asserted:
+
+- No third-party dependencies. `project.yml` declares one package, `BrickKit`, by local path.
+- No networking code. `grep -rE "URLSession|WKWebView|CFNetwork|Network\."` over the Swift
+  sources returns nothing; no ATS exception domains, no SKAdNetwork entries.
+- `PrivacyInfo.xcprivacy`: `NSPrivacyTracking = false`, empty tracking domains, empty
+  `NSPrivacyCollectedDataTypes`, one accessed-API reason (CA92.1, own `UserDefaults`).
+
+**The premise needs checking first.** The message says the app "has been submitted for the Kids
+Category", but `store/METADATA.md` specifies Productivity / Health & Fitness with a 4+ age
+rating — and 4+ is not the Kids Category; they are separate settings in App Store Connect. Look
+at App Information → Category before replying. If *Kids* is selected there, clear it: the Kids
+Category requires a parental gate on external links and forbids third-party analytics and ads
+outright, so being in it by accident only invites unrelated rejections.
+
+Draft reply, covering both the correction and the four answers: `store/REVIEW-REPLY-1.3.md`.
+
 ## Rejected: 1.0 (2), 2.5.1, automated Family Controls check
 
 App Review rejected build 1.0 (2) on 2 September 2026 with an automated message: the app "uses
@@ -124,6 +146,8 @@ the brick is the thing you leave behind.
 
 ## Still to do
 
+- Confirm the category in App Store Connect is Productivity / Health & Fitness and not Kids,
+  then reply to the 1.3 message from `store/REVIEW-REPLY-1.3.md`.
 - Create the App Store Connect record and fill it from `store/METADATA.md`, then upload the build.
 - Point the Privacy Policy URL at `store/PRIVACY.md` on GitHub (or a Pages site).
 - Exercise the app on a device once — Screen Time authorization, a shield going up, the monitor
