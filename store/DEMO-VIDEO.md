@@ -115,6 +115,29 @@ thing missing. The NFC antenna is at the **top of the back** of the phone; hold 
     camera. This proves the review notes are true — and, coming last, it cannot be mistaken for
     how the rest of the video was made.
 
+## The short version — and what the submitted video contains
+
+The full shot list above runs long, mostly because of the 15-minute wait. That wait is avoidable:
+**"Locked for at least" offers 0 and 5 minutes**, and the minimum is per setup — only the *session
+length* carries Apple's 15-minute floor. Set the minimum to 5 and the whole loop films in one
+continuous take.
+
+This is the take that was submitted with 1.0 (3), 9 minutes 19 seconds:
+
+1. Pairing a fresh tag.
+2. Starting a session by tapping it.
+3. A blocked app showing the shield.
+4. Tapping the tag before the minimum: refused, with the time remaining.
+5. The tag left in another room, and the walk back.
+6. Tapping the tag again: the session ends, and the blocked app opens.
+7. The emergency unlock — a ten-second press.
+
+A first cut ran 91 seconds and showed pairing, a session start and the emergency press, with no
+shield and no tap-to-end. That was not enough, and it is worth knowing why: the shield is the only
+evidence the app does what it claims, and ending with the tag is half of what the tag is for — the
+ten-second press is not NFC at all. Reverse mode and exit routes were left out on purpose. They
+are not what Apple asked about, and a route needs a second tag.
+
 ## Export and upload
 
 - 1080p, H.264, mp4 or mov. No music, no titles beyond the captions for cuts.
