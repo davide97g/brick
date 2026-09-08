@@ -12,7 +12,7 @@ settings:
     # One place for the version: the app and both extensions must ship the same
     # pair or App Store Connect rejects the bundle (ITMS-90473).
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
 packages:
   BrickKit:
     path: BrickKit
