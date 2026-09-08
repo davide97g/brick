@@ -13,3 +13,6 @@ Package.resolved
 
 # macOS
 .DS_Store
+
+# Python (the store scripts)
+__pycache__/
