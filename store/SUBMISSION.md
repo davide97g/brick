@@ -204,8 +204,9 @@ says, so the copy lives here rather than in a web form. Run on 8 September 2026:
 - Nine screenshots in each of `APP_IPHONE_67` (1320 × 2868) and `APP_IPHONE_65` (1242 × 2688),
   replacing the five that were there, all `COMPLETE` with no delivery errors.
 
-Still to add: the demo video URL, which goes in as the first line of the notes —
-`python3 store/connect.py metadata --video-url <URL>`.
+The demo video is in as the first line of the notes:
+`https://youtu.be/Igl_C9sU3jk` — unlisted, family-safe, plays with no sign-in, 91 seconds. Pushed
+with `python3 store/connect.py metadata --video-url <URL>`.
 
 ## Done: screenshots regenerated for build 3
 
@@ -231,9 +232,11 @@ the brick is the thing you leave behind.
   `store/DEMO-VIDEO.md`. Filming it *is* the device pass listed below: Screen Time authorization,
   a real tag pairing, a shield going up, and the monitor clearing it, all on camera.
 - Put the video URL in App Review Information → Notes and send `store/REVIEW-REPLY-2.1.md`.
+- Trim the numbered list in `store/REVIEW-REPLY-2.1.md` to what the 91-second video actually
+  shows, then send it.
 - Reply to the 1.3 message from `store/REVIEW-REPLY-1.3.md` — the category paragraph needs
   trimming first, since Kids was never selected.
-- Submit for review once the video URL is in the notes.
+- Submit for review.
 
 ## Unverified
 

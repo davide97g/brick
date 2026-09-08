@@ -7,8 +7,12 @@ Sent: (not yet sent)
 
 1. Upload 1.0 (3) (`build/export/Brick.ipa`) and select it for the version.
 2. Record the video from `store/DEMO-VIDEO.md` against that build.
-3. Put the video URL in App Review Information → Notes, first line. Sign-in required: No.
-4. Then send the reply below, with the URL filled in.
+3. ~~Put the video URL in App Review Information → Notes.~~ Done — it is the first line of the
+   notes, pushed with `python3 store/connect.py metadata --video-url …`. Sign-in required: No.
+4. **Check the numbered list below against what the video actually shows, and delete what it
+   doesn't.** The video is 91 seconds; claiming a step Apple can't see is worse than claiming
+   fewer.
+5. Then send the reply.
 
 ---
 
@@ -17,7 +21,7 @@ Hello,
 Thank you — the demo video is now linked in the App Review Information section for build 1.0 (3),
 and the URL is also here:
 
-[VIDEO URL]
+https://youtu.be/Igl_C9sU3jk
 
 The video was filmed with a second camera so that the physical iPhone and the NFC tag are both in
 frame during every tap, and there are no cuts inside a tap. It shows, in order:
