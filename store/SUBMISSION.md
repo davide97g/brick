@@ -1,6 +1,6 @@
 # Submission state
 
-What is done, what is blocked, and what is unverified. Updated 4 September 2026.
+What is done, what is blocked, and what is unverified. Updated 8 September 2026.
 
 ## Done and observed
 
@@ -88,7 +88,15 @@ The code is in the review notes in `store/METADATA.md`.
 The code being public in this repository costs nothing: anyone wanting out of a session can
 already delete the app, which onboarding states plainly.
 
-## Open: Guideline 1.3, Kids Category information request
+## Closed: Guideline 1.3, Kids Category information request
+
+**The premise was wrong, and checkable over the API.** On 8 September 2026 the app had *no
+category set at all* — `primaryCategory` and `secondaryCategory` were both `null` on the app
+info, and no Kids category was selected anywhere. So there was nothing to clear. Both are now set
+(Productivity / Health & Fitness) through `store/connect.py`. The four answers below still hold
+and are worth sending as the reply, minus the correction paragraph about clearing Kids.
+
+### The four questions
 
 App Review sent an automated 1.3 message on 4 September 2026 asking the four standard Kids
 Category questions (third-party analytics, third-party advertising, sharing with third parties,
@@ -110,7 +118,15 @@ outright, so being in it by accident only invites unrelated rejections.
 
 Draft reply, covering both the correction and the four answers: `store/REVIEW-REPLY-1.3.md`.
 
-## Rejected: 1.0 (2), 2.5.1, automated Family Controls check
+## Cleared: the 2.5.1 automated Family Controls check
+
+It stopped firing. Build 1.0 (2) reached an actual human review on 5 September 2026 — the
+rejection that came back names review devices (iPhone 17 Pro Max, iPad Air 11-inch M3) and asks
+for a demo video, which an automated entitlement scan does not do. Nothing on this side changed
+between the two messages, so the scan was the wrong conclusion it looked like. Kept below for the
+record, and `store/REVIEW-REPLY.md` never had to be sent.
+
+### What the 2.5.1 message said
 
 App Review rejected build 1.0 (2) on 2 September 2026 with an automated message: the app "uses
 one or more Screen Time APIs but the app has not been submitted with the Family Controls
@@ -132,11 +148,74 @@ Additional Capabilities. The request that failed with a 503 on approval day left
 So the grant is in place, the entitlement is in every bundle, and the check still fired. Nothing
 on this side to change — it is Apple's automated scan reaching the wrong conclusion.
 
-Next:
+`store/REVIEW-REPLY.md` holds the reply that was drafted for it. Don't send it: the message it
+answers is no longer the live one.
 
-- Reply in Resolution Center with the evidence above — draft in `store/REVIEW-REPLY.md`.
-- Only if Apple asks for one: bump `CURRENT_PROJECT_VERSION` to 3 and upload again. A build
-  number cannot be reused.
+## Open: 1.0 (2), Guideline 2.1, demo video needed
+
+App Review asked on 5 September 2026 for a video showing the physical iPhone and the physical NFC
+tag interacting — the initial pairing, then the whole workflow. Submission ID
+`bd38e031-a11b-445c-9d03-bf18edbd4cb0`. A screen recording is what was rejected; both objects have
+to be in frame, and no cut may fall inside a tap.
+
+- Shot list, filming setup and the export/upload steps: `store/DEMO-VIDEO.md`.
+- Reply draft, to send once the URL exists: `store/REVIEW-REPLY-2.1.md`.
+- The video URL is now the first line of the review notes in `store/METADATA.md`, and App Review
+  Information will not be complete without it.
+
+Two flows need more than one tag to film — an exit route, and the foreign-tag refusal — so two
+spare NTAG215s are worth buying before recording. Note that the first pairing writes an NDEF
+record and **locks the tag read-only permanently**; a locked tag still pairs afterwards, because
+the writer's failure falls back to reading the factory UID.
+
+## Build 1.0 (3): archived, exported, verified
+
+`CURRENT_PROJECT_VERSION` is 3 — build 2 is spent, and the video has to show the version under
+review. Rebuilt on 8 September 2026 and inspected rather than assumed:
+
+- 124 BrickKit tests pass; the Simulator build and the Release archive both succeed with no
+  warnings.
+- `** EXPORT SUCCEEDED **` → `build/export/Brick.ipa`, 1.5 MB.
+- `1.0` / `3` in all three Info.plists, so no ITMS-90473. `CFBundleDisplayName` present in both
+  extension bundles.
+- Entitlements in the exported binaries: `com.apple.developer.family-controls` = true in
+  `Brick.app`, `BrickMonitor.appex` and `BrickShield.appex`; NFC formats `TAG` only, no `NDEF`;
+  the App Group in all three; `get-task-allow` = false and `beta-reports-active` = true.
+- All three embedded profiles are "iOS Team Store Provisioning Profile", each carrying Family
+  Controls, expiring 2 September 2027.
+- `ITSAppUsesNonExemptEncryption` = false, `PrivacyInfo.xcprivacy` in the bundle,
+  `UIDeviceFamily` = [1] (iPhone only — the iPad Air the reviewer used was running it in
+  compatibility mode), portrait only.
+- The 1024 icon is PNG colour type 2: RGB, no alpha channel.
+
+## Done: the listing filled from the repository, over the API
+
+`store/connect.py` signs with the App Store Connect API key and pushes what `store/METADATA.md`
+says, so the copy lives here rather than in a web form. Run on 8 September 2026:
+
+- Version localization: 2318-character description (it said "Brick" where it should say buriko),
+  90 characters of keywords, promotional text, support URL.
+- App info: subtitle "A session you walk away from", privacy policy URL, and the two categories,
+  which were unset.
+- **App Review notes: 2716 characters, and they were empty.** The `BRICK-REVIEW` demo code, the
+  "testing without a tag" instructions and the Screen Time explanation had never left
+  `store/METADATA.md` — so the reviewer who asked for a demo video had no way to know a demo mode
+  existed. That is likely half of why 1.0 (2) came back.
+- Nine screenshots in each of `APP_IPHONE_67` (1320 × 2868) and `APP_IPHONE_65` (1242 × 2688),
+  replacing the five that were there, all `COMPLETE` with no delivery errors.
+
+Still to add: the demo video URL, which goes in as the first line of the notes —
+`python3 store/connect.py metadata --video-url <URL>`.
+
+## Done: screenshots regenerated for build 3
+
+The set on the listing was captured on 2 September, before setups, exit routes, reverse mode and
+the dynamic-type pass all landed on 3 September — it showed an app that no longer exists.
+`store/screenshots/capture.py` now seeds the state file per screen and captures eleven, and every
+one was looked at. Two things the looking caught: the status bar was overriding the time to Apple's
+9:41 while the screen under it derived "until 23:43" from the real clock, and the running dial's
+last digit was blurred in every frame because `.contentTransition(.numericText())` animates for
+most of each second — that shot is now taken at first paint, before the first tick.
 
 ## Name
 
@@ -146,17 +225,21 @@ the brick is the thing you leave behind.
 
 ## Still to do
 
-- Confirm the category in App Store Connect is Productivity / Health & Fitness and not Kids,
-  then reply to the 1.3 message from `store/REVIEW-REPLY-1.3.md`.
-- Create the App Store Connect record and fill it from `store/METADATA.md`, then upload the build.
-- Point the Privacy Policy URL at `store/PRIVACY.md` on GitHub (or a Pages site).
-- Exercise the app on a device once — Screen Time authorization, a shield going up, the monitor
-  clearing it — before asking anyone to review it.
+- ~~Upload the build and select it for the version.~~ Done: 1.0 (3) is uploaded, `VALID`, and
+  attached to version 1.0.
+- Install 1.0 (3) on the phone through TestFlight, then record the demo video from
+  `store/DEMO-VIDEO.md`. Filming it *is* the device pass listed below: Screen Time authorization,
+  a real tag pairing, a shield going up, and the monitor clearing it, all on camera.
+- Put the video URL in App Review Information → Notes and send `store/REVIEW-REPLY-2.1.md`.
+- Reply to the 1.3 message from `store/REVIEW-REPLY-1.3.md` — the category paragraph needs
+  trimming first, since Kids was never selected.
+- Submit for review once the video URL is in the notes.
 
 ## Unverified
 
 Everything about behaviour on a real device beyond launch. The shield has never been observed
 going up, `BrickMonitor` has never been observed firing with the app dead, and no NFC tag has
-been read — there is no tag yet. The demo-tag path is tested in BrickKit and builds for device,
-but has not been exercised on the phone either. None of that is required to upload a build; all
-of it is required before the app is worth reviewing.
+been read on the phone. The demo-tag path is tested in BrickKit and builds for device, but has not
+been exercised there either. Recording the demo video settles all of it at once — the video is
+worthless unless every step in it actually worked — so nothing here should be claimed as working
+until that footage exists.

@@ -83,7 +83,8 @@ xcrun simctl spawn $D defaults write com.davideghiotto.brick pretend.authorized 
   shipped file shape — a single `tag` and a single `blocklist` — byte for byte, including a
   session that was running when the update landed. Those legacy keys are read and never written
   back: one migration, at the first load.
-- **Store submission state lives in `store/`.** `SUBMISSION.md` is the running record of what is done, blocked and unverified; `METADATA.md` holds the listing copy and review notes. Update them when any of it changes.
+- **Store submission state lives in `store/`.** `RELEASE.md` is the runbook — follow it end to end when asked to prepare a release, without stopping to ask; `SUBMISSION.md` is the running record of what is done, blocked and unverified; `METADATA.md` holds the listing copy and review notes; `DEMO-VIDEO.md` is the shot list App Review's 2.1 message asked for. Update them when any of it changes.
+- **The listing is pushed from the repository, never typed into the web form.** `store/connect.py` parses `METADATA.md` and writes the version localization, app info, categories and review notes over the App Store Connect API; `store/screenshots/capture.py` seeds the state file per screen and captures the set. Edit the Markdown and re-run. And read the live state back — a repository holding the right words is not the same as Apple having received them: the notes were empty in App Store Connect for two rejections running.
 - **Don't put persistent chrome inside a paged `TabView`.** A `PaperCard` placed in each page slides a second copy of itself into view on every swipe, and its bottom safe-area inset doesn't resolve, so it renders cropped. Keep the card and the dots outside the `TabView`; only content pages swipe.
 - **App Review has no brick, and may have no enrolled face.** `DemoTagAccess` +
   `SwitchingTagReader`/`SwitchingTagWriter`/`SwitchingBiometrics` swap in the pretend tag *and*

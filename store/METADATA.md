@@ -103,7 +103,13 @@ answered at build time and never asked per upload.
 
 Paste this into App Store Connect verbatim. **Demo access code: `BRICK-REVIEW`** — enter it under
 Settings → App Review. Fill the demo-account fields with any placeholder; there is no account.
+Sign-in required: **No**.
 
+The **first line must be the demo video URL** — App Review asked for one under Guideline 2.1 on
+5 September 2026 and will ask again without it. Record it from `store/DEMO-VIDEO.md`.
+
+> **Demo video (physical iPhone + physical NFC tag): [VIDEO URL]**
+>
 > buriko pairs your iPhone with a physical NFC tag. Tapping the tag starts a Screen Time session;
 > tapping it again ends one, but only after the minimum duration you chose. Everything is local:
 > no account, no server, no networking code of any kind.
@@ -137,30 +143,48 @@ Settings → App Review. Fill the demo-account fields with any placeholder; ther
 > sees which apps were chosen: `ApplicationToken`s are opaque, and the encoded selection is
 > stored as bytes and never decoded.
 >
+> **The hardware.** There is no proprietary accessory. The tag is an ordinary NTAG215 sticker or
+> card, about a euro, optionally inside a 3D-printed shell whose model is public domain in the
+> repository. Any NFC tag works: the app reads the tag's factory UID with Core NFC
+> (`NFCTagReaderSession`, entitlement format `TAG`) and matches it against the paired UID. On the
+> first pairing it also writes an NDEF identity record and locks the tag read-only. What makes the
+> object matter is where the user leaves it, not what it contains.
+>
 > The source is public: https://github.com/davide97g/brick
 
 ## Screenshots
 
-Two sets, same four screens:
+Captured by `python3 store/screenshots/capture.py`, which seeds the state file per screen rather
+than tapping through — that is the only way to reach the screens behind a tap, and it is
+repeatable. Every screen is looked at afterwards; the onboarding card bug once survived a pass
+because only page 0 was captured.
+
+Two sets, same screens:
 
 - `store/screenshots/6.9/` — 1320 × 2868, captured natively on the iPhone 17 Pro Max simulator.
 - `store/screenshots/6.5/` — 1242 × 2688, scaled to width and centre-cropped from the set above
   (the aspect ratios differ by 0.4%, so cropping a sliver of near-black margin beats stretching
   the dial into an ellipse).
 
-App Store Connect's iPhone slot decides which it wants. The 6.5" slot rejects 1320 × 2868 —
-give it the 6.5" set; a 6.9" slot (via "View All Sizes in Media Manager") takes the native one.
+In the API there is no 6.9" display type: the 1320 × 2868 set goes into **APP_IPHONE_67** and the
+1242 × 2688 set into **APP_IPHONE_65**. `python3 store/connect.py screenshots` replaces both.
 
-Upload these four, in order:
+The listing order, first three being the ones the install sheet shows:
 
-1. `02-idle.png` — Ready, with what the brick blocks
-2. `03-start-sheet.png` — picking a length, with the minimum stated
-3. `04-running.png` — the dial mid-session, the gate tick, where the brick is
-4. `06-blocklist.png` — session length and the minimum, and why the minimum exists
+1. `01-idle` — Ready, and what the brick blocks
+2. `03-running` — the dial mid-session, the gate, and which brick to walk to
+3. `04-reverse` — reverse mode standing: blocked by default, a tap buys an open window
+4. `02-start-sheet` — picking a length
+5. `05-blocklist` — the setup: length, minimum, direction, the walk back
+6. `06-setups` — several setups, one per occasion
+7. `07-route` — the exit route, tap in order
+8. `08-bricks` — the set of paired tags
+9. `11-onboarding` — the privacy page
 
-`01-onboarding.png` (the privacy page) is optional as a fifth. `05-settings.png` is **not** for
-the listing — it shows the App Review section — but it is the evidence that section renders
-correctly.
+Not in the listing: `10-settings` shows the App Review section, so it is evidence that the
+section renders rather than a selling point, and `09-brick` is a detail screen that says nothing
+the others don't.
 
 The shield screen itself can't be captured this way: it is drawn by the extension in another
-process, over a blocked app, and never appears in the host app.
+process, over a blocked app, and never appears in the host app. It belongs in the demo video
+instead — see `store/DEMO-VIDEO.md`.

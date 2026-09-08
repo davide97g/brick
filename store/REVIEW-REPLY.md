@@ -1,6 +1,8 @@
 # Reply to App Review — 1.0 (2), 2.5.1 automated Family Controls rejection
 
-Sent: (not yet sent)
+Sent: never. Superseded — build 1.0 (2) reached a human review on 5 September 2026, so the
+automated check had stopped firing by then. Kept for the record. The live message is the
+Guideline 2.1 video request: `store/REVIEW-REPLY-2.1.md`.
 
 ---
 

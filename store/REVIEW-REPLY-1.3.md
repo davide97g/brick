@@ -2,20 +2,15 @@
 
 Received: 4 September 2026. Sent: (not yet sent)
 
-## Before sending: check the category
+## Before sending: the category was never Kids
 
-This app was not intended for the Kids Category. `store/METADATA.md` sets Productivity as the
-primary category and Health & Fitness as the secondary, with a 4+ age rating — and a 4+ rating is
-not the Kids Category. The two are separate settings, and the questionnaire only fires when *Kids*
-is actually selected as a category.
+Checked over the API on 8 September 2026: the app had **no category set at all** — both
+`primaryCategory` and `secondaryCategory` were `null`, and Kids was not selected anywhere. The
+questionnaire fired on an app with no category, not on a Kids app. Both are now set to
+Productivity (primary) and Health & Fitness (secondary) via `store/connect.py`.
 
-So check App Store Connect → the app → App Information → Category before replying. If *Kids* is
-selected there (primary or secondary), clear it and set Productivity / Health & Fitness. The Kids
-Category carries requirements this app does not meet and does not want: a parental gate on every
-external link, no third-party analytics or advertising of any kind, and a Kids-specific privacy
-policy. Being in it by accident invites rejections unrelated to what the app does.
-
-Then send the reply below, which answers the four questions either way.
+So keep the correction short — say the category is set and was never Kids — and send the four
+answers, which hold either way.
 
 ---
 
@@ -23,12 +18,12 @@ Hello,
 
 Two things — first a correction, then the answers you asked for.
 
-**The Kids Category was not intended.** buriko is a Productivity app for adults: it applies
+**The Kids Category was never selected.** buriko is a Productivity app for adults: it applies
 Screen Time restrictions to the owner's own device, unlocked by tapping a physical NFC object the
 owner leaves in another room. It is rated 4+ because it contains no objectionable content, but it
-is not designed for or directed at children. [If you cleared the category: "We have corrected the
-category in App Store Connect to Productivity (primary) and Health & Fitness (secondary)."] Please
-let us know if anything further is needed to take the submission out of the Kids Category.
+is not designed for or directed at children, and it has not been submitted for the Kids Category.
+When we received your message the app had no category set at all; it is now Productivity
+(primary) and Health & Fitness (secondary). Please let us know if anything further is needed.
 
 The answers below hold regardless of category.
 
@@ -75,7 +70,7 @@ Two notes on that last point and on Face ID:
 The only other data touched is the app's own `UserDefaults`, declared in the privacy manifest
 under CA92.1. Deleting the app deletes the file and every restriction the app applied.
 
-The full policy is at [Privacy Policy URL], and its source is `store/PRIVACY.md` in the public
-repository.
+The full policy is at https://github.com/davide97g/brick/blob/main/store/PRIVACY.md, which is
+also its source in the public repository.
 
 Thank you.
