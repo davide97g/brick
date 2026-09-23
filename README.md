@@ -37,8 +37,8 @@ What this does differently: sessions have real duration policy, the shield scree
 ## Status
 
 Core built and tested. Membership is paid, the app builds and launches on a device, and an App
-Store archive is clean — but **nothing real has been observed running yet**, and there is no NFC
-tag to pair.
+Store archive is clean — but **nothing real has been observed running yet**. The first bricks
+are printed: an NFC sticker sealed inside PLA, reading through the plastic.
 
 Both capabilities this product requires — Family Controls and NFC Tag Reading — are unavailable
 to free personal Apple developer teams. That was the wall this project sat behind:
@@ -61,12 +61,12 @@ and `store/REVIEW-REPLY.md` the draft reply.
 | `BrickMonitor` — clears the shield when time is up | Compiles, embedded, never observed running |
 | `BrickShield` — the blocked-app screen | Compiles, embedded, never observed running |
 | Screen Time on device (authorization, shield) | Not yet exercised |
-| NFC pairing and reads | Not started — no tag yet |
+| NFC pairing and reads | Printed tags read through PLA; pairing in the app unverified on device |
 | Face ID as a stand-in key | Built and tested; the prompt itself is unverified on device |
 | App Store archive | Exported and uploaded; 1.0 (2) held by an automated review check |
 | Store metadata, privacy policy | Drafted in `store/` |
 | Stations, exit routes, reverse mode | Built and tested in `BrickKit`; screens verified in the Simulator |
-| Hardware | Parametric covers in `hardware/`, nothing printed |
+| Hardware | The tag is printed and ready-to-print files are in `hardware/models/`; the cover family is sliced, never printed |
 
 ## How a session works
 
@@ -139,7 +139,9 @@ BrickKit/                 the rules, testable anywhere
 Shared/                   SelectionCoder + SelectionShield, compiled into both
 BrickMonitor/             DeviceActivityMonitorExtension
 BrickShield/              ShieldConfigurationExtension
+hardware/                 the brick: OpenSCAD source, slice script, ready-to-print models
 spikes/SpikeAShield/      the probe that proved the entitlement gate
+spikes/SpikeNFC/          a bare NFC read/write lab for testing tags on device
 project.yml               source of truth; Brick.xcodeproj is generated
 ```
 
@@ -157,13 +159,22 @@ open Brick.xcodeproj
 
 ## Hardware
 
-A monolith, not a puck: roughly 45×45×20mm, matte PLA, flat top face with a recessed glyph as the tap target. Weight is the point — 120–200g of ballast in the base, ferrite-isolated from the tag, because a light object doesn't feel like a commitment.
+The brick is a 42 × 42 × 10.8 mm PLA tag with BURIKO raised on the face you tap. The NFC sticker goes in at a print pause and the printer closes over it, so the finished object has no opening anywhere.
 
-- NTAG215 embedded mid-print via a Bambu Studio pause, with **≤1.2mm** of PLA above it
-- Magnets and metal kept **≥8mm** from the coil — eddy currents detune the antenna
-- The iPhone's NFC antenna is at the **top edge of the back**, so the tap face needs to be big enough to aim at
+Print one from `hardware/models/`:
 
-`hardware/brick-cover.scad` builds three covers — slab, puck, coaster. Nothing printed yet.
+| File | Size | |
+|---|---|---|
+| [`buriko-tag`](hardware/models/buriko-tag.3mf) | 42 mm | The current tag — print this one |
+| [`buriko-tag-110`](hardware/models/buriko-tag-110.3mf) | 46.2 mm | The same model at 110% |
+| [`buriko_nfc_tag`](hardware/models/buriko_nfc_tag.3mf) | 42 mm | The first pass, kept for the record |
+
+Each comes as `.stl` and as a Bambu Studio `.3mf` project for the A1 mini with the pause already placed — open it with **File → Open Project**, not Import, or the pause is dropped. Any NTAG-family sticker around 25 mm works: the app pairs on the tag's factory UID, so no sticker is special.
+
+- **No metal near the coil.** No magnets, no metallic or carbon-fill filament — a conductive layer detunes the antenna and the phone stops seeing the tag.
+- The iPhone's NFC antenna is at the **top edge of the back**, so that's the edge to tap with.
+
+`hardware/buriko-tag.scad` is the source and `hardware/slice.sh` renders, slices and checks it at any size. `hardware/brick-cover.scad` builds three more covers — slab, puck, coaster — that have been sliced but never printed. [`hardware/README.md`](hardware/README.md) has the print steps and what each print taught.
 
 ## Privacy
 
@@ -182,11 +193,10 @@ Next, in order:
 
 1. Reply to App Review with the entitlement evidence, and create the App Store Connect record
    (`store/SUBMISSION.md`, `store/REVIEW-REPLY.md`)
-2. Buy NTAG215 tags, pair one, and watch a shield go up and clear itself for real
-3. Spike the three risks on device: shields surviving reboot, tag reads through printed PLA,
-   `DeviceActivityMonitor` firing when the app is dead
-4. Decide how a reviewer with no tag is meant to review this
-5. Print the first brick and measure read reliability through the shell
+2. Pair a printed brick and watch a shield go up and clear itself for real
+3. Spike the remaining risks on device: shields surviving reboot, `DeviceActivityMonitor` firing
+   when the app is dead
+4. Measure read reliability through the shell across a few prints
 
 Deliberately not planned: streaks, points, scores, or anything that makes the phone matter more. The product's value is not caring about it.
 

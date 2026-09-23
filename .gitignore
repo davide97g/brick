@@ -16,3 +16,6 @@ Package.resolved
 
 # Python (the store scripts)
 __pycache__/
+
+# Rendered hardware output (regenerate with openscad)
+hardware/out/
