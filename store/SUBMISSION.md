@@ -2,6 +2,12 @@
 
 What is done, what is blocked, and what is unverified. Updated 8 September 2026.
 
+## Live
+
+- The owner reported the app live on the App Store on 29 September 2026. That is their report,
+  not something read back from App Store Connect here. The launch trailer (`video/`) now ends on
+  Apple's official "Download on the App Store" badge.
+
 ## Done and observed
 
 - Paid membership active. Team `DA596D32QB`; development profiles now carry

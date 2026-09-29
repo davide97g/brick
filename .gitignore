@@ -19,3 +19,6 @@ __pycache__/
 
 # Rendered hardware output (regenerate with openscad)
 hardware/out/
+
+# Rendered trailer, look-dev stills and analysis output (regenerate from video/)
+var/

@@ -142,6 +142,7 @@ BrickShield/              ShieldConfigurationExtension
 hardware/                 the brick: OpenSCAD source, slice script, ready-to-print models
 spikes/SpikeAShield/      the probe that proved the entitlement gate
 spikes/SpikeNFC/          a bare NFC read/write lab for testing tags on device
+video/                    the launch trailer: Remotion, drawn from the app's tokens and the tag STL
 project.yml               source of truth; Brick.xcodeproj is generated
 ```
 

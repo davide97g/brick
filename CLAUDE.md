@@ -33,6 +33,23 @@ xcodebuild -project Brick.xcodeproj -scheme Brick \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
+The trailer lives in `video/` (Remotion; `video/docs/TREATMENT.md` is the director's cut, `video/docs/SUNO.md` the song brief). Renders go to the gitignored `var/video/`:
+
+```sh
+cd video && bun install
+bunx remotion studio                                              # scrub, preview
+bunx remotion still LookBrick ../var/video/look/brick.png --frame=120
+bunx remotion render Trailer ../var/video/trailer.mp4             # 1080p60
+# the song -> beat map -> the 1:30 cut (public/trailer.wav + data/edit.json)
+cd analysis && uv run python prep.py && uv run python beats.py && uv run python analyze.py --plots && uv run python edit.py
+```
+
+The Suno track (`video/song/piano-motif.mp3`) is gitignored — its rights follow the Suno plan, not this repo's Unlicense — so a fresh clone renders only after the mp3 is dropped back in and `edit.py` rebuilds `public/trailer.wav`. `data/edit.json` is committed, so the scenes build without it.
+
+Scenes time themselves from `data/edit.json` through `src/lib/timeline.ts` (`bar(k)`, `section(name)`, `env()`), never from hand-typed frames. The splices in `edit.py` sit on 4-bar phrase downbeats; move one only to another phrase boundary.
+
+A delayRender taken inside `<ThreeCanvas>` is not waited for: load assets (the tag STL) in the DOM tree and pass them in as props, or the still is taken without them.
+
 To exercise the app in the Simulator, seed the state file directly — it's faster and more precise than tapping through:
 
 ```sh
