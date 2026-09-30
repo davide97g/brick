@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>buriko — a session you walk away from</title>
+<meta name="description" content="An iPhone app paired with a small printed brick. Tap it to block the apps you chose. The only early way back is walking to the brick, once the time you agreed to has passed.">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="apple-itunes-app" content="app-id=6807760213">
+<meta property="og:title" content="buriko">
+<meta property="og:description" content="A session you walk away from. Free on the App Store, for iPhone.">
+<meta property="og:image" content="https://buriko.davideghiotto.it/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<style>
+/* The app's own tokens (Brick/Support/Theme.swift). Change them there first, then here. */
+:root {
+  --ink: #0B0B0D;
+  --ink-raised: #141416;
+  --paper: #EDE7DC;
+  --paper-edge: #DCD4C6;
+  --chalk: #F2F2F0;
+  --ash: #9C9CA1;
+  --graphite: #3A3A3E;
+  --chalkline: #C7BEAE;
+  --ink-on-paper: #17171A;
+  --ash-on-paper: #6B675F;
+  /* The only chroma. On the page as in the app: only where the commitment breaks. */
+  --oxide: #B4614F;
+
+  --card-radius: 30px;
+  --gutter: clamp(16px, 5vw, 56px);
+  --measure: 38rem;
+  --sans: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Display", "Helvetica Neue", "Segoe UI", sans-serif;
+  color-scheme: dark light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--chalk);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 4px; }
+
+/* Engraved hardware label: small, wide-tracked, upper case. */
+.engraved {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.wordmark { width: 86px; aspect-ratio: 36 / 10; }
+
+/* ---------- The field: where the state lives ---------- */
+
+.field {
+  min-height: calc(100svh - 64px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 0 var(--gutter) 96px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 0;
+}
+.topbar a { text-decoration: none; color: var(--ash); }
+.topbar a:hover { color: var(--chalk); }
+
+.hero {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  gap: 0;
+}
+
+.dial {
+  position: relative;
+  width: min(74vw, 42svh, 360px);
+  aspect-ratio: 1;
+  margin-top: 8px;
+}
+.dial svg { width: 100%; height: 100%; }
+.dial .tick { stroke: var(--graphite); stroke-width: 2.2; stroke-linecap: round; transition: stroke 1.2s ease; }
+.dial .tick.lit { stroke: var(--chalk); }
+.dial .tick.gate { stroke-width: 2.6; }
+.readout-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+}
+.readout {
+  font-size: clamp(2.6rem, 11vw, 4rem);
+  font-weight: 100;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk);
+}
+.readout-wrap .engraved { color: var(--ash); }
+
+.gate-note { color: var(--ash); margin: 16px 0 0; }
+
+.hero h1 {
+  margin: clamp(32px, 6svh, 72px) 0 0;
+  max-width: 16ch;
+  font-size: clamp(2.3rem, 6.4vw, 4.1rem);
+  font-weight: 200;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.hero .lede {
+  margin: 22px 0 0;
+  max-width: 34rem;
+  color: var(--ash);
+  font-size: 1.125rem;
+  text-wrap: pretty;
+}
+.get {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+.get .badge { height: 48px; width: auto; }
+.get .engraved { color: var(--ash); }
+
+/* ---------- The card: paper, docked, like every screen in the app ---------- */
+
+.card {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink-on-paper);
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
+  margin-top: -64px;
+  padding: clamp(56px, 9vw, 120px) var(--gutter) 40px;
+}
+.card .engraved { color: var(--ash-on-paper); }
+.wrap { max-width: 1080px; margin: 0 auto; }
+
+.card section + section { margin-top: clamp(96px, 14vw, 168px); }
+
+.thesis {
+  max-width: 30ch;
+  margin: 0;
+  font-size: clamp(1.7rem, 3.8vw, 2.6rem);
+  font-weight: 300;
+  line-height: 1.22;
+  letter-spacing: -0.018em;
+  text-wrap: pretty;
+}
+.thesis span { color: var(--ash-on-paper); }
+
+h2 {
+  margin: 14px 0 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.section-head { max-width: var(--measure); }
+.section-head p { margin: 16px 0 0; color: var(--ash-on-paper); }
+
+/* A session: three moments that happen in this order. */
+.moments {
+  list-style: none;
+  margin: 48px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--chalkline);
+}
+.moments li {
+  padding: 26px 28px 0 0;
+}
+.moments li + li { padding-left: 28px; border-left: 1px solid var(--chalkline); }
+.moments h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.moments p { margin: 10px 0 0; color: var(--ash-on-paper); text-wrap: pretty; }
+.moments q { quotes: none; color: var(--ink-on-paper); }
+
+/* Screens */
+.screens {
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 4vw, 48px);
+  align-items: start;
+}
+.screens figure { margin: 0; }
+.screens img {
+  width: 100%;
+  height: auto;
+  border-radius: clamp(18px, 3vw, 34px);
+  box-shadow: 0 1px 0 var(--paper-edge), 0 24px 48px -28px rgba(23, 23, 26, 0.45);
+}
+.screens figcaption { margin-top: 18px; color: var(--ash-on-paper); font-size: 0.97rem; text-wrap: pretty; }
+.screens figcaption b { display: block; color: var(--ink-on-paper); font-weight: 500; margin-bottom: 2px; }
+
+/* The object */
+.object {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(24px, 5vw, 72px);
+  align-items: center;
+}
+.object img { width: 100%; height: auto; }
+.object p { margin: 16px 0 0; color: var(--ash-on-paper); }
+.object .more { margin-top: 24px; }
+.text-link {
+  color: var(--ink-on-paper);
+  text-decoration: underline;
+  text-decoration-color: var(--chalkline);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+.text-link:hover { text-decoration-color: currentColor; }
+.aside {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--chalkline);
+  font-size: 0.97rem;
+}
+
+/* What holds */
+.rules {
+  margin: 48px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: clamp(24px, 6vw, 88px);
+}
+.rules div {
+  padding: 22px 0;
+  border-top: 1px solid var(--chalkline);
+}
+.rules dt { font-weight: 500; }
+.rules dd { margin: 4px 0 0; color: var(--ash-on-paper); text-wrap: pretty; }
+.rules .oxide { color: var(--oxide); }
+
+.honest {
+  max-width: var(--measure);
+  margin-top: 56px;
+  padding: 26px 28px;
+  border: 1px solid var(--chalkline);
+  border-radius: 20px;
+}
+.honest p { margin: 10px 0 0; }
+.honest p + p { color: var(--ash-on-paper); }
+
+/* Close */
+.close {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.close .wordmark { width: min(280px, 60vw); color: var(--ink-on-paper); }
+.close .sub {
+  margin: 22px 0 0;
+  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+  font-weight: 300;
+  color: var(--ash-on-paper);
+}
+.close .badge { height: 52px; width: auto; margin-top: 36px; }
+.close .engraved { margin-top: 14px; }
+
+footer {
+  margin-top: clamp(96px, 12vw, 144px);
+  padding-top: 24px;
+  border-top: 1px solid var(--chalkline);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  justify-content: space-between;
+  color: var(--ash-on-paper);
+  font-size: 0.9rem;
+}
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--ink-on-paper); }
+
+/* ---------- Load: one quiet moment, then stillness ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { opacity: 0; transform: translateY(10px); animation: rise 1.4s cubic-bezier(.2,.7,.2,1) forwards; }
+  .rise.d1 { animation-delay: .5s; }
+  .rise.d2 { animation-delay: .75s; }
+  .rise.d3 { animation-delay: 1s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+}
+
+/* ---------- Narrow ---------- */
+
+@media (max-width: 760px) {
+  .moments { grid-template-columns: 1fr; border-top: 0; }
+  .moments li, .moments li + li { padding: 22px 0; border-left: 0; border-top: 1px solid var(--chalkline); }
+  .screens {
+    grid-template-columns: repeat(3, 72%);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 0 var(--gutter) 8px;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .screens::-webkit-scrollbar { display: none; }
+  .screens li { scroll-snap-align: start; }
+  .object { grid-template-columns: 1fr; }
+  .rules { grid-template-columns: 1fr; }
+  footer { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header class="field">
+  <div class="topbar">
+    <a href="./" aria-label="buriko">
+      <svg class="wordmark" viewBox="-18 -5 36 10" style="color: var(--chalk)" aria-hidden="true"><use href="assets/wordmark.svg#w" x="-18" y="-5" width="36" height="10" fill="currentColor"/></svg>
+    </a>
+    <a class="engraved" href="https://apps.apple.com/app/buriko/id6807760213">App Store</a>
+  </div>
+
+  <div class="hero">
+    <!-- The app's bezel: 72 ticks, elapsed ones lit, one longer tick at the gate —
+         the point where the brick becomes able to end the session. -->
+    <div class="dial" role="img" aria-label="A session dial counting down, with the minimum marked">
+      <svg viewBox="0 0 400 400" id="bezel" aria-hidden="true"></svg>
+      <div class="readout-wrap">
+        <div class="readout" id="readout">0:43:00</div>
+        <div class="engraved" id="until">Until —</div>
+      </div>
+    </div>
+    <p class="engraved gate-note" id="gate">The brick opens at —</p>
+
+    <h1 class="rise d1">Put the way out across the room.</h1>
+    <p class="lede rise d2">buriko is an iPhone app that pairs with a small printed brick. Tap it, and the apps you chose are blocked. Getting them back early means walking to the brick, and only after the time you agreed to.</p>
+
+    <div class="get rise d3">
+      <a href="https://apps.apple.com/app/buriko/id6807760213" aria-label="Download buriko on the App Store">
+        <img class="badge" src="assets/badge-white.svg" alt="Download on the App Store" width="120" height="40">
+      </a>
+      <span class="engraved">Free · iPhone · iOS 17 or later</span>
+    </div>
+  </div>
+</header>
+
+<main class="card">
+  <div class="wrap">
+
+    <section aria-label="Why an object">
+      <p class="thesis">Blocking an app takes one tap. So does unblocking it, with the same thumb, in the same three seconds as the urge. <span>buriko keeps the first tap and moves the second one to another room.</span></p>
+    </section>
+
+    <section aria-labelledby="session">
+      <div class="section-head">
+        <span class="engraved">A session</span>
+        <h2 id="session">Instant to enter. Slow to leave.</h2>
+      </div>
+      <ol class="moments">
+        <li>
+          <h3>Tap</h3>
+          <p>Hold the phone to the brick and pick a length, fifteen minutes or more. The apps you chose go behind a shield.</p>
+        </li>
+        <li>
+          <h3>Leave</h3>
+          <p>The brick stays on the shelf. The phone comes with you. A blocked app shows the time left and where you left the brick.</p>
+        </li>
+        <li>
+          <h3>Come back, or don't</h3>
+          <p>It ends by itself at the time you set. Walk back and tap early once the minimum has passed. Before that, the app says <q>Not yet.</q> and the time remaining.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="screens">
+      <div class="section-head">
+        <span class="engraved">The app</span>
+        <h2 id="screens">An instrument, not a dashboard.</h2>
+        <p>State on the dark surface, controls on the paper card. Monochrome, except for one colour where a session breaks.</p>
+      </div>
+      <ul class="screens">
+        <li><figure>
+          <img src="assets/03-running.webp" alt="A running session: a dial reading 1:03:59, and a card that says the brick opens at 22:46" width="660" height="1434" loading="lazy">
+          <figcaption><b>Running</b>The long tick marks when the brick starts to work, so you know before you walk back whether the walk is worth it.</figcaption>
+        </figure></li>
+        <li><figure>
+          <img src="assets/04-reverse.webp" alt="Reverse mode on paper: apps blocked, a button to tap the brick for fifteen minutes" width="660" height="1434" loading="lazy">
+          <figcaption><b>Reverse</b>Blocked by default. A tap opens a fixed window that closes by itself.</figcaption>
+        </figure></li>
+        <li><figure>
+          <img src="assets/07-route.webp" alt="The walk back: desk slab, then kitchen shelf, tapped in that order" width="660" height="1434" loading="lazy">
+          <figcaption><b>Routes</b>Pair more than one brick and the way out becomes a walk: desk, then kitchen, in order. A wrong tap starts it again.</figcaption>
+        </figure></li>
+      </ul>
+    </section>
+
+    <section class="object" aria-labelledby="brick">
+      <img src="assets/brick.webp" alt="The brick: a dark rounded square of printed plastic with BURIKO raised on its face" width="1024" height="608" loading="lazy">
+      <div>
+        <span class="engraved">The brick</span>
+        <h2 id="brick">42 mm of plastic, with a tag inside.</h2>
+        <p>An NFC sticker sealed into a printed shell, with no opening anywhere. The models and print profiles are public domain. Any NTAG sticker works: the app pairs on the tag's own ID, so no sticker is special.</p>
+        <p class="more"><a class="text-link" href="https://github.com/davide97g/brick/tree/main/hardware/models">Print files on GitHub</a></p>
+        <p class="aside">No brick yet? Face ID can stand in. It is the weaker key, and the app says so: the key is in your hand instead of across the room. Pair a brick later and it takes over.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="rules">
+      <div class="section-head">
+        <span class="engraved">What holds</span>
+        <h2 id="rules">Real Screen Time restrictions, and a few rules.</h2>
+      </div>
+      <dl class="rules">
+        <div><dt>Fifteen minutes at least</dt><dd>Apple's scheduler refuses anything shorter, so the app never offers it.</dd></div>
+        <div><dt>Every session has an end</dt><dd>It clears itself at the time you set, with the app closed. A forgotten brick never strands you.</dd></div>
+        <div><dt class="oxide">Three emergency unlocks a week</dt><dd>Behind a ten-second hold. The valve has to exist. It shouldn't be something a thumb does by reflex.</dd></div>
+        <div><dt>Nothing leaves the phone</dt><dd>No account, no analytics, no networking code at all. The source is public, so that is checkable.</dd></div>
+        <div><dt>It never learns what you blocked</dt><dd>Apple hands the app opaque tokens. It stores them without decoding them.</dd></div>
+        <div><dt>No streaks, no scores</dt><dd>Those make the phone matter more. The point is to stop caring about it.</dd></div>
+      </dl>
+
+      <div class="honest">
+        <span class="engraved">One thing no app can fix</span>
+        <p>Deleting buriko removes every restriction it applied.</p>
+        <p>To shut that door: Settings → Screen Time → Content &amp; Privacy Restrictions → App Deletion → Don't Allow.</p>
+      </div>
+    </section>
+
+    <section class="close" aria-label="Download">
+      <svg class="wordmark" viewBox="-18 -5 36 10" role="img" aria-label="buriko"><use href="assets/wordmark.svg#w" x="-18" y="-5" width="36" height="10" fill="currentColor"/></svg>
+      <p class="sub">A session you walk away from.</p>
+      <a href="https://apps.apple.com/app/buriko/id6807760213" aria-label="Download buriko on the App Store">
+        <img class="badge" src="assets/badge-black.svg" alt="Download on the App Store" width="120" height="40">
+      </a>
+      <span class="engraved">Free · iPhone · iOS 17 or later</span>
+    </section>
+
+    <footer>
+      <span>Released into the public domain, hardware included.</span>
+      <nav aria-label="Links">
+        <a href="https://github.com/davide97g/brick">Source</a>
+        <a href="https://github.com/davide97g/brick/blob/main/store/PRIVACY.md">Privacy</a>
+        <a href="https://github.com/davide97g/brick/issues">Support</a>
+      </nav>
+    </footer>
+
+  </div>
+</main>
+
+<script>
+// A pretend session in real time: an hour long, a 45-minute minimum, 17 minutes gone.
+// It moves at the speed a real one does, which is to say almost not at all.
+(() => {
+  const TICKS = 72, LENGTH = 60 * 60, MINIMUM = 45 * 60;
+  const svg = document.getElementById('bezel');
+  const readout = document.getElementById('readout');
+  const until = document.getElementById('until');
+  const gate = document.getElementById('gate');
+  const ns = 'http://www.w3.org/2000/svg';
+  const gateIndex = Math.round(TICKS * MINIMUM / LENGTH);
+  const ticks = [];
+
+  for (let i = 0; i < TICKS; i++) {
+    const a = (i / TICKS) * Math.PI * 2 - Math.PI / 2;
+    const isGate = i === gateIndex;
+    const r1 = isGate ? 160 : 176, r2 = isGate ? 196 : 192;
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', 200 + r1 * Math.cos(a));
+    line.setAttribute('y1', 200 + r1 * Math.sin(a));
+    line.setAttribute('x2', 200 + r2 * Math.cos(a));
+    line.setAttribute('y2', 200 + r2 * Math.sin(a));
+    line.setAttribute('class', isGate ? 'tick gate' : 'tick');
+    svg.appendChild(line);
+    ticks.push(line);
+  }
+
+  const fmtClock = d => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  let start = Date.now() - 17 * 60 * 1000;
+  let settled = false;
+
+  function frame() {
+    let elapsed = (Date.now() - start) / 1000;
+    if (elapsed >= LENGTH) { start = Date.now(); elapsed = 0; }
+    const left = Math.ceil(LENGTH - elapsed);
+    const h = Math.floor(left / 3600), m = Math.floor(left % 3600 / 60), s = left % 60;
+    readout.textContent = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    until.textContent = 'Until ' + fmtClock(new Date(start + LENGTH * 1000));
+    gate.textContent = 'The brick opens at ' + fmtClock(new Date(start + MINIMUM * 1000));
+    const lit = Math.floor(elapsed / LENGTH * TICKS);
+    ticks.forEach((t, i) => t.classList.toggle('lit', i < lit));
+  }
+
+  // One sweep on arrival, then real time.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { frame(); } else {
+    frame();
+    ticks.forEach(t => t.classList.remove('lit'));
+    const lit = Math.floor(17 * 60 / LENGTH * TICKS);
+    for (let i = 0; i < lit; i++) setTimeout(() => ticks[i].classList.add('lit'), 200 + i * 45);
+  }
+  setTimeout(() => setInterval(frame, 1000), reduce ? 0 : 1600);
+})();
+</script>
+</body>
+</html>

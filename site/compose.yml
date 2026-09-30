@@ -1,0 +1,6 @@
+# Dokploy compose app on the homelab mini PC. The domain (buriko.davideghiotto.it) is a Dokploy
+# domain record on service `web`, port 80, no HTTPS: Cloudflare's tunnel terminates TLS.
+services:
+  web:
+    build: .
+    restart: unless-stopped

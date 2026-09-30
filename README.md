@@ -143,6 +143,7 @@ hardware/                 the brick: OpenSCAD source, slice script, ready-to-pri
 spikes/SpikeAShield/      the probe that proved the entitlement gate
 spikes/SpikeNFC/          a bare NFC read/write lab for testing tags on device
 video/                    the launch trailer: Remotion, drawn from the app's tokens and the tag STL
+site/                     the landing page at buriko.davideghiotto.it: static HTML in nginx, on the homelab
 project.yml               source of truth; Brick.xcodeproj is generated
 ```
 
